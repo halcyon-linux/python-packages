@@ -52,7 +52,7 @@ ci/packages.toml    the registry: build selection (a package without an
                     entry is never built). All batch 0, no sweep feeds.
 ci/matrix.py        batch/wave build plan (validate job runs it)
 pkgs/<pkg>/         spec + vendored sources under src/
-repo/               consumer .repo drop-ins (all seven group repos)
+repo/               this project's consumer .repo drop-in
 templates/          starting point for new specs (vendored-source pattern)
 ```
 

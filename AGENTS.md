@@ -89,9 +89,11 @@ mock -r /tmp/copr.cfg <srpm>
     Commands) — a failed Copr build leaves the published repo on the last
     good version, so main-line failures self-heal, but a green SRPM saves
     a cascade round-trip.
-- `repo/` carries the consumer drop-ins for **all seven** group repos —
-  repoclosure installs all of them and checks THIS repo's project against
-  the union, exactly what a halcyon-image consumer sees.
+- `repo/` carries this project's consumer drop-in (`python-packages.repo`)
+  — repoclosure installs it and checks the project's closure against
+  Fedora (+ Terra), exactly what a halcyon-image consumer sees. Sibling
+  group repos are intentionally absent: these packages depend on nothing
+  outside Fedora, so the union adds no coverage.
 - **CI authentication**: the `COPR_CLICONF` GitHub secret drives every
   copr-cli step. The Copr API token expires — a wave of 401s in
   copr-build.yml means: regenerate at
