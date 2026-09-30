@@ -5,11 +5,12 @@ FROM registry.fedoraproject.org/fedora-minimal:44
 # anything under .github/builder/ changes; copr-build's validate job waits
 # for this image's run of the same commit before submitting anything.
 #
-# The post-anda image: CI runs the version sweeper (ci/sweep/sweep.py),
-# generates SRPMs (spectool + rpmbuild -bs) and drives Copr (copr-cli) in
-# here. mock is included for LOCAL builds against a `copr-cli mock-config`
-# buildroot (see AGENTS.md); CI itself never builds in a chroot. The stock
-# /etc/yum.repos.d/fedora*.repo keep providing Fedora 44 + updates.
+# The CI image: jobs pack SRPMs (tarball + rpmbuild -bs) and drive Copr
+# (copr-cli) in here (this repo has no version sweeper — halcyon-authored
+# tools have no upstream feed). mock is included for LOCAL builds against a
+# `copr-cli mock-config` buildroot (see AGENTS.md); CI itself never builds
+# in a chroot. The stock /etc/yum.repos.d/fedora*.repo keep providing
+# Fedora 44 + updates.
 
 RUN dnf up -y && \
     dnf swap -y systemd-standalone-sysusers systemd && \
