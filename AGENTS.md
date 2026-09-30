@@ -76,9 +76,12 @@ mock -r /tmp/copr.cfg <srpm>
     rpmautospec/`%autorelease`.
   - **never mention macros textually in comments** — rpm expands macros
     inside comments too.
-  - stdlib-only keeps runtime Requires to the automatic python ABI dep;
-    runtime helpers (`fd`, `fzf`, `bat`, `rg`) are checked by each tool at
-    startup, not by RPM deps.
+  - stdlib-only keeps Python Requires to the automatic python ABI dep, but
+    every external helper a tool shells out to (`fd`, `fzf`, `bat`, `rg`,
+    `grim`, …) is a hard `Requires:` (binary map: `fd` → `fd-find`, `rg` →
+    `ripgrep`, `ps` → `procps-ng`, `ssh` → `openssh-clients`) so a plain
+    install pulls a working tool. No editor Requires — `$EDITOR` is user
+    choice (the image already ships neovim).
   - the `%pyproject_save_files -l <module>` argument is the import name,
     not the package name, when they differ (`dump_to_markdown`).
   - console scripts land in `%{_bindir}` and are claimed explicitly in

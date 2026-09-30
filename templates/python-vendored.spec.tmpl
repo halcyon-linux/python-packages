@@ -3,8 +3,11 @@
 # Copy to pkgs/<name>/<name>.spec and fill the five @FIELDS@. Convention notes:
 # - Source0 is packed by the copr-build submit job from pkgs/<name>/src/ with
 #   a top-level <name>-<version> dir; plain autosetup unpacks it (no -c).
-# - stdlib-only: no runtime Requires beyond the automatic python ABI dep.
-#   Runtime helpers (fd, fzf, bat, rg) are checked by the tool at startup.
+# - stdlib-only: no Python Requires beyond the automatic python ABI dep, but
+#   every external helper the tool shells out to (fd, fzf, bat, rg, grim,
+#   ...) is a hard Requires: line so plain `dnf install <pkg>` pulls a
+#   working tool. The binary-to-RPM map: fd -> fd-find, rg -> ripgrep,
+#   ps -> procps-ng, ssh -> openssh-clients.
 # - Written Release + changelog (no rpmautospec — terra-style conventions).
 # - Never mention macros textually in comments (rpm expands them anywhere).
 # - Bumps are manual: edit Version + changelog, push, the cascade rebuilds.

@@ -1,13 +1,7 @@
-# Template for halcyon-original Python helpers (vendored sources, no upstream).
-#
-# Copy to pkgs/<name>/<name>.spec and fill the five @FIELDS@. Convention notes:
-# - Source0 is packed by the copr-build submit job from pkgs/<name>/src/ with
-#   a top-level <name>-<version> dir; plain autosetup unpacks it (no -c).
-# - stdlib-only: no runtime Requires beyond the automatic python ABI dep.
-#   Runtime helpers (fd, fzf, bat, rg) are checked by the tool at startup.
-# - Written Release + changelog (no rpmautospec — terra-style conventions).
-# - Never mention macros textually in comments (rpm expands them anywhere).
-# - Bumps are manual: edit Version + changelog, push, the cascade rebuilds.
+# dump-to-markdown: halcyon-original Python helper; sources vendored under
+# pkgs/dump-to-markdown/src (no upstream tarball exists). Submitted to Copr
+# aahsnr-work/python-packages. Bumps are manual: edit Version + changelog,
+# push, the cascade rebuilds.
 %define debug_package %{nil}
 
 Name:           dump-to-markdown
