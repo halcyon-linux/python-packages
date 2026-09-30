@@ -22,8 +22,10 @@ registry: packages in one batch must never depend on each other, batch N may
 BuildRequire batch < N output (Copr makes each successful build visible to
 the project repo immediately, and copr-build.yml submits wave-by-wave).
 
-The same registry carries each package's [pkg.updates] sweep configuration
-(consumed by ci/sweep/sweep.py); matrix.py ignores it.
+The same registry in sibling repos carries each package's [pkg.updates]
+sweep configuration (consumed by their ci/sweep/sweep.py); this repo has no
+sweeper — halcyon-authored tools have no upstream feed — and matrix.py
+ignores the table when absent.
 
 Usage:
   ci/matrix.py [--since REV] [--only PKG...] [--batch N ...] [--list]
