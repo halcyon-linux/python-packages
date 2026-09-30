@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "se"
+version = "1.0.0"
+description = "Search & edit — ripgrep | fzf | $EDITOR at the matched line."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+
+[project.scripts]
+se = "se:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

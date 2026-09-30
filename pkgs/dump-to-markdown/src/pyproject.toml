@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dump-to-markdown"
+version = "1.2.0"
+description = "Dump every file in a project tree into one Markdown document."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+
+[project.scripts]
+dump-to-markdown = "dump_to_markdown:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+# python-packages Copr repo — one of the seven halcyon group repositories
+# (base-pkgs, cli-tools, applications, fonts, texlive-packages, linux-p03,
+# python-packages).
+#
+# Enable with:  install -Dm644 repo/python-packages.repo /etc/yum.repos.d/
+# (or `dnf copr enable aahsnr-work/python-packages fedora-44` and merge the
+# priority=1 line into the generated file — the copr plugin does not set
+# priorities).
+#
+# priority=1 (dnf: lower number wins; Fedora/Terra default to 99) makes every
+# package this repo builds shadow Fedora, Terra and any unprioritized Copr.
+# The groups own disjoint package sets, so priority=1 on all seven is
+# unambiguous; packages a group does not build resolve from Fedora/Terra.
+
+[copr:copr.fedorainfracloud.org:aahsnr-work:python-packages]
+name=Copr repo for python-packages (aahsnr-work) — priority 1
+baseurl=https://download.copr.fedorainfracloud.org/results/aahsnr-work/python-packages/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=False
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/aahsnr-work/python-packages/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+priority=1

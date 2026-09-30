@@ -1,0 +1,51 @@
+# ci/packages.toml — the python-packages build registry.
+#
+# Consumed by ci/matrix.py (build selection). One table per package; **a
+# package without an entry is not built**. The specs themselves live in
+# pkgs/<pkg>/<pkg>.spec, with each package's sources vendored under
+# pkgs/<pkg>/src/ (these are halcyon-original tools — there is no upstream
+# tarball for spectool to fetch; the submit job packs Source0 from src/).
+#
+# All eleven packages are batch 0: stdlib-only leaf tools with no
+# inter-dependencies (matrix.py's batch invariant is trivially satisfied).
+#
+# No [pkg.updates] tables: halcyon-authored tools have no upstream feed for
+# the version sweeper. Bumps are manual — edit the spec's Version + %changelog
+# (the registry carries no version field, so nothing else needs syncing) and
+# push; copr-build.yml rebuilds the changed packages.
+#
+# batch 0  all packages: dump-to-markdown, fconf, fe, ff, fkill, fp, fssh,
+#          rmi, rmtmp, screenshot, se
+
+[dump-to-markdown]
+batch = 0
+
+[fconf]
+batch = 0
+
+[fe]
+batch = 0
+
+[ff]
+batch = 0
+
+[fkill]
+batch = 0
+
+[fp]
+batch = 0
+
+[fssh]
+batch = 0
+
+[rmi]
+batch = 0
+
+[rmtmp]
+batch = 0
+
+[screenshot]
+batch = 0
+
+[se]
+batch = 0

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fssh"
+version = "1.0.0"
+description = "Fuzzy SSH launcher driven by ~/.ssh/config."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+
+[project.scripts]
+fssh = "fssh:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

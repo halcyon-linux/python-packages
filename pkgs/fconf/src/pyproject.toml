@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fconf"
+version = "1.0.0"
+description = "Fuzzy configuration finder/editor (fd | fzf | bat | $EDITOR)."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+
+[project.scripts]
+fconf = "fconf:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

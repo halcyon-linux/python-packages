@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screenshot"
+version = "1.0.0"
+description = "Wayland screenshot helper (grim | swappy; slurp region, niri window)."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+
+[project.scripts]
+screenshot = "screenshot:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
