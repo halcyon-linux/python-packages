@@ -16,6 +16,7 @@ no upstream tarball: each package's sources are vendored under
 
 | Package            | Binary             | Purpose                                              |
 | ------------------ | ------------------ | ---------------------------------------------------- |
+| `bbrew-helper`     | `bbrew-helper`     | Bootstrap Homebrew and launch the bbrew TUI.          |
 | `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.  |
 | `bruh`             | `bruh`             | Short alias wrapper; `bruh moment` forwards to rollback. |
 | `crh`              | `crh`              | Custom resolution and EDID helper.                   |

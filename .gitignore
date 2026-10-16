@@ -17,7 +17,3 @@ __pycache__/
 # osc build scratch (tools/obs-local.sh)
 _buildconfig-*
 _buildinfo-*.xml
-
-# ZCode session artifacts
-.zcode/
-.zcodeignore

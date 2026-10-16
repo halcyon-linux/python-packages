@@ -131,12 +131,13 @@ def _read_input() -> str:
         return ""
 
 
-def confirm(message: str) -> bool:
+def confirm(message: str) -> bool | None:
     print(f"{message} {_style('(Y/n)', '33')} ", end="", flush=True)
     try:
         reply = input()
     except EOFError:
-        reply = ""
+        print()
+        return None
     return not reply or reply.lower().startswith("y")
 
 

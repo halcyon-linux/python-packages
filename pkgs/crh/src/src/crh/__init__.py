@@ -8,7 +8,7 @@ import shlex
 import subprocess
 import sys
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 OS_RELEASE = Path("/etc/os-release")
@@ -67,12 +67,13 @@ def _style(text: str, code: str) -> str:
     return f"\033[{code}m{text}\033[0m" if sys.stdout.isatty() else text
 
 
-def confirm(message: str) -> bool:
+def confirm(message: str) -> bool | None:
     print(f"{message} {_style('(Y/n)', '33')} ", end="", flush=True)
     try:
         reply = input()
     except EOFError:
-        reply = ""
+        print()
+        return None
     return not reply or reply.lower().startswith("y")
 
 
@@ -141,12 +142,17 @@ def _apply_kargs(
     success_message: str,
     failure_message: str,
     reboot_flag: str | None = None,
+    after: Callable[[], int] | None = None,
 ) -> int:
     print("Adding kernel arguments..." if arguments[0].startswith("--append") else "Removing kernel arguments...")
     print(f"Command: rpm-ostree kargs {' '.join(arguments)}")
     result = run_command(["rpm-ostree", "kargs", *arguments])
     if result.returncode:
         print(_style(failure_message, "31"))
+        return 1
+    # File changes run only after the kargs committed, so a failure here
+    # cannot leave the boot arguments pointing at files that are gone.
+    if after is not None and after():
         return 1
     print(f"{_style(success_message, '32')} Reboot to apply changes.")
     return confirm_reboot(reboot_flag)
@@ -235,10 +241,21 @@ def add(resolution: str | None = None, reboot_flag: str | None = None) -> int:
     )
 
 
-def _remove_edid_files(interactive: bool) -> None:
+def _remove_edid_files(interactive: bool) -> int:
     option = "-vi" if interactive else "-v"
-    run_command(["sudo", "rm", option, str(FIRMWARE_EDID)])
-    run_command(["sudo", "rm", option, str(DRACUT_EDID)])
+    failed = False
+    for path in (FIRMWARE_EDID, DRACUT_EDID):
+        result = run_command(["sudo", "rm", option, str(path)])
+        # A declined or failed removal leaves the file; a missing file is fine.
+        failed = failed or (result.returncode != 0 and path.exists())
+    if failed:
+        print(
+            _style(
+                "Some EDID files could not be removed; kernel arguments were already updated.",
+                "31",
+            )
+        )
+    return 1 if failed else 0
 
 
 def remove_all(modes: Sequence[str], kargs: str, yes: bool = False) -> int:
@@ -250,21 +267,23 @@ def remove_all(modes: Sequence[str], kargs: str, yes: bool = False) -> int:
         return 0
 
     arguments = []
+    removes_edid = False
     for mode in modes:
         arguments.append(f"--delete-if-present=video={mode}")
         if is_edid_mode(mode, kargs):
+            removes_edid = True
             arguments.extend(
                 (
                     "--delete-if-present=firmware_class.path=/usr/local/lib/firmware",
                     f"--delete-if-present=drm.edid_firmware={mode.split(':', 1)[0]}:edid/edid.bin",
                 )
             )
-            _remove_edid_files(interactive=not yes)
     return _apply_kargs(
         arguments,
         "Custom resolution removed successfully!",
         "Removing kernel arguments failed. You may have an update in the background.",
         "-y" if yes else None,
+        after=(lambda: _remove_edid_files(interactive=not yes)) if removes_edid else None,
     )
 
 
@@ -279,23 +298,24 @@ def remove_interactive(modes: Sequence[str], kargs: str) -> int:
     if selected == "Back":
         return 0
     selected_mode = selected.removesuffix(" (EDID)")
-    monitor = selected_mode.rsplit(":", 1)[0]
+    monitor = selected_mode.split(":", 1)[0]
     if not confirm(f"Remove {_style(monitor, '1')}?"):
         print("Cancelled.")
         return 0
-    arguments = [f"--delete-if-present=video={monitor}"]
-    if is_edid_mode(selected_mode, kargs):
+    removes_edid = is_edid_mode(selected_mode, kargs)
+    arguments = [f"--delete-if-present=video={selected_mode}"]
+    if removes_edid:
         arguments.extend(
             (
                 "--delete-if-present=firmware_class.path=/usr/local/lib/firmware",
                 f"--delete-if-present=drm.edid_firmware={monitor}:edid/edid.bin",
             )
         )
-        _remove_edid_files(interactive=True)
     return _apply_kargs(
         arguments,
         "Custom resolution removed successfully!",
         "Removing kernel arguments failed. You may have an update in the background.",
+        after=(lambda: _remove_edid_files(interactive=True)) if removes_edid else None,
     )
 
 
@@ -311,7 +331,7 @@ def remove(resolution: str | None = None, reboot_flag: str | None = None) -> int
         print("Usage: rm <name>:<xres>x<yres>[M][R][@<refresh>][i][m][e]")
         print("Examples: rm DP1:1920x1080MR@75e")
         return 1
-    if resolution not in " ".join(modes):
+    if resolution not in modes:
         print("The resolution you are trying to remove does not exist!")
         return 1
     return _apply_kargs(
@@ -320,6 +340,20 @@ def remove(resolution: str | None = None, reboot_flag: str | None = None) -> int
         "Removing kernel arguments failed. You may have an update in the background.",
         reboot_flag,
     )
+
+
+def _private_tmp() -> Path:
+    CRH_TMP.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if (
+        CRH_TMP.is_symlink()
+        or not CRH_TMP.is_dir()
+        or CRH_TMP.stat().st_uid != os.getuid()
+    ):
+        raise OSError(
+            f"{CRH_TMP} is not a private directory owned by the current user"
+        )
+    CRH_TMP.chmod(0o700)
+    return CRH_TMP
 
 
 def dump_edid() -> int:
@@ -333,40 +367,60 @@ def dump_edid() -> int:
         return 1
     try:
         edid = paths[0].read_bytes()
-        CRH_TMP.mkdir(parents=True, exist_ok=True)
-        (CRH_TMP / "edid.bin").write_bytes(edid)
+        target = _private_tmp() / "edid.bin"
+        descriptor = os.open(
+            target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600
+        )
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(edid)
     except OSError as error:
         print(f"crh: {error}", file=sys.stderr)
         return 1
-    print(f"EDID dumped at {_style(str(CRH_TMP / 'edid.bin'), '1')}, edit it in your EDID editor.")
+    print(f"EDID dumped at {_style(str(target), '1')}, edit it in your EDID editor.")
     press_any_key()
     return 0
 
 
+def _install_edid(edited_edid: Path) -> int:
+    dracut_line = 'install_items+=" /usr/local/lib/firmware/edid/edid.bin "\n'
+    commands = (
+        (["sudo", "mkdir", "-p", str(FIRMWARE_EDID.parent)], None),
+        (["sudo", "cp", str(edited_edid), str(FIRMWARE_EDID)], None),
+        (["sudo", "mkdir", "-p", str(DRACUT_EDID.parent)], None),
+        (["sudo", "touch", str(DRACUT_EDID)], None),
+        (["sudo", "tee", str(DRACUT_EDID)], dracut_line),
+    )
+    for args, input_text in commands:
+        if run_command(args, input_text=input_text).returncode:
+            print(_style("Installing the EDID files failed.", "31"))
+            return 1
+    return 0
+
+
+def _edid_placed(path: Path) -> bool:
+    return path.is_file() and path.stat().st_size > 0
+
+
 def add_edid() -> int:
     kargs, modes = print_status()
-    edited_edid = CRH_TMP / "edited" / "edid.bin"
+    edited_edid = _private_tmp() / "edited" / "edid.bin"
     edited_edid.parent.mkdir(parents=True, exist_ok=True)
     print(f"Place your edited EDID into {_style(str(edited_edid.parent), '1')}")
-    while not edited_edid.is_file() or edited_edid.stat().st_size == 0:
-        if not confirm("Confirm that you have placed the EDID: "):
-            if not edited_edid.is_file() or edited_edid.stat().st_size == 0:
-                print("Your EDID is empty! Check it and try again.")
-    if run_command(["sudo", "mkdir", "-p", str(FIRMWARE_EDID.parent)]).returncode:
-        return 1
-    if run_command(["sudo", "cp", str(edited_edid), str(FIRMWARE_EDID)]).returncode:
-        return 1
+    while not _edid_placed(edited_edid):
+        placed = confirm("Confirm that you have placed the EDID: ")
+        if placed is None:
+            print("No input available; the EDID was not placed.", file=sys.stderr)
+            return 1
+        if not placed and not _edid_placed(edited_edid):
+            print("Your EDID is empty! Check it and try again.")
 
     print("Select your monitor to set:")
     monitor = choose_monitor(connected_only=False)
     if monitor is None:
         return 0
-    if run_command(["sudo", "mkdir", "-p", str(DRACUT_EDID.parent)]).returncode:
-        return 1
-    if run_command(["sudo", "touch", str(DRACUT_EDID)]).returncode:
-        return 1
-    dracut_line = 'install_items+=" /usr/local/lib/firmware/edid/edid.bin "\n'
-    if run_command(["sudo", "tee", str(DRACUT_EDID)], input_text=dracut_line).returncode:
+    # The files must exist before kargs: rpm-ostree may regenerate the
+    # initramfs with the dracut config as part of that command.
+    if _install_edid(edited_edid):
         return 1
 
     arguments = [

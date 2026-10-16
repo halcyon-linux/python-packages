@@ -6,7 +6,7 @@
 # pkgs/<pkg>/src/ (these are halcyon-original tools — there is no upstream
 # tarball for spectool to fetch; the submit job packs Source0 from src/).
 #
-# The fourteen leaf packages are batch 0. bruh is batch 1 because it depends
+# The fifteen leaf packages are batch 0. bruh is batch 1 because it depends
 # on brh; the workflow waits for batch 0 before submitting it.
 #
 # No [pkg.updates] tables: halcyon-authored tools have no upstream feed for
@@ -14,9 +14,12 @@
 # (the registry carries no version field, so nothing else needs syncing) and
 # push; copr-build.yml rebuilds the changed packages.
 #
-# batch 0: brh, crh, dump-to-markdown, fconf, fe, ff, fkill, fp, fssh,
-#          gameclass, rmi, rmtmp, screenshot, se
+# batch 0: bbrew-helper, brh, crh, dump-to-markdown, fconf, fe, ff, fkill,
+#          fp, fssh, gameclass, rmi, rmtmp, screenshot, se
 # batch 1: bruh
+
+[bbrew-helper]
+batch = 0
 
 [brh]
 batch = 0

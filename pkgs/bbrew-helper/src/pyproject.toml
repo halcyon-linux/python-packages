@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bbrew-helper"
+version = "1.0.0"
+description = "Homebrew environment bootstrap and launcher for the bbrew TUI."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+bbrew-helper = "bbrew_helper:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

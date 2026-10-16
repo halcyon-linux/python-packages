@@ -194,6 +194,34 @@ class PackageTests(unittest.TestCase):
 
         run.assert_not_called()
 
+    def test_eof_is_not_confirmation(self):
+        with (
+            patch("builtins.input", side_effect=EOFError),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertIsNone(brh.confirm("Continue?"))
+
+    def test_rollback_eof_does_not_run_rpm_ostree(self):
+        with (
+            patch("builtins.input", side_effect=EOFError),
+            patch.object(brh, "run_command") as run,
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(brh.rollback(), 0)
+
+        run.assert_not_called()
+
+    def test_rebase_eof_does_not_run_rpm_ostree(self):
+        config = brh.ImageConfig("image", "provider", "stable")
+        with (
+            patch("builtins.input", side_effect=EOFError),
+            patch.object(brh, "run_command") as run,
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(brh.rebase_to(config, "testing"), 1)
+
+        run.assert_not_called()
+
     def test_choose_accepts_numbered_selection(self):
         with patch("builtins.input", return_value="2"), contextlib.redirect_stdout(
             io.StringIO()
