@@ -26,7 +26,7 @@ upstream to sweep — bumps are manual spec edits), and the submit job packs
 
 ## Commands
 
-There is no test suite; verification = the Copr build going green.
+Unit tests for the wrapper packages run in CI; verification also includes the Copr build going green.
 
 ```bash
 # registry consistency + build plan (what CI's validate job runs)
@@ -58,11 +58,10 @@ mock -r /tmp/copr.cfg <srpm>
   `LICENSE`), and the registry entry (`batch = 0`). Never commit
   `__pycache__/`, `*.pyc` or `*.egg-info` (the `.gitignore` already excludes
   them).
-- **All packages are batch 0** — stdlib-only leaf tools with no
-  inter-dependencies. If a future tool gains a dependency on another repo
-  package, it moves to a higher batch and copr-build.yml gains a
-  submitN/waitN pair (copy the batch-0 pair, renumber, chain after that
-  wave).
+- **Packages without internal dependencies are batch 0.** A package that
+  depends on another repo package moves to a higher batch, and
+  copr-build.yml gains a submitN/waitN pair (copy the batch-0 pair, renumber,
+  and chain it after that wave). `bruh` is batch 1 because it requires `brh`.
 - **Bumps are manual** (no sweeper): edit the spec's `Version` + `%changelog`
   and push — the registry carries no version field, so nothing else needs
   syncing. Push cascades are gated on the CASCADE_ENABLED repository

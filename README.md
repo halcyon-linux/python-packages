@@ -16,6 +16,9 @@ no upstream tarball: each package's sources are vendored under
 
 | Package            | Binary             | Purpose                                              |
 | ------------------ | ------------------ | ---------------------------------------------------- |
+| `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.  |
+| `bruh`             | `bruh`             | Short alias wrapper; `bruh moment` forwards to rollback. |
+| `crh`              | `crh`              | Custom resolution and EDID helper.                   |
 | `dump-to-markdown` | `dump-to-markdown` | Dump a project tree into one Markdown document.      |
 | `fconf`            | `fconf`            | Fuzzy configuration finder/editor.                   |
 | `fe`               | `fe`               | Fuzzy edit — pick a file, open in `$EDITOR`.         |
@@ -23,19 +26,20 @@ no upstream tarball: each package's sources are vendored under
 | `fkill`            | `fkill`            | Fuzzy process killer.                                |
 | `fp`               | `fp`               | Fuzzy file/directory previewer.                      |
 | `fssh`             | `fssh`             | Fuzzy SSH launcher.                                  |
+| `gameclass`        | `gameclass`        | Set WM_CLASS for a wrapped game command.             |
 | `rmi`              | `rmi`              | Safe removal to the XDG trash.                       |
 | `rmtmp`            | `rmtmp`            | Root-only secure cleanup of `/tmp` and `/var/tmp`.   |
 | `screenshot`       | `screenshot`       | Wayland screenshot helper.                           |
 | `se`               | `se`               | Search & edit with ripgrep and fzf.                  |
 
 Runtime tool dependencies (`fd`, `fzf`, `bat`, `rg`, `grim`, `swappy`,
-`slurp`) come from the image's RPM layer; each tool checks for its own
-dependencies at startup and exits with a clear message if missing.
+`slurp`, `rpm-ostree`, `skopeo`, `sudo`, `systemd`, `wmctrl`, `xdotool`) come from RPM dependencies; tools report
+failures when a required command cannot run.
 
 ## CI
 
-- `copr-build.yml` — a push to `main` rebuilds changed packages (all batch
-  0, one wave). Gated on the `CASCADE_ENABLED` repository variable
+- `copr-build.yml` — a push to `main` rebuilds changed packages in dependency
+  waves (batch 0 before batch 1). Gated on the `CASCADE_ENABLED` repository variable
   (kill-switch; `workflow_dispatch` bypasses it). PRs validate only.
 - `repoclosure.yml` — nightly + post-cascade closure check of the published
   Copr repo against Fedora 44/45.

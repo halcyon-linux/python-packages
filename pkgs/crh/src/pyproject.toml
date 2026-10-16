@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crh"
+version = "1.0.0"
+description = "Interactive custom resolution and EDID helper for rpm-ostree systems."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+crh = "crh:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

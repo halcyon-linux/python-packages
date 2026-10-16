@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brh"
+version = "1.0.0"
+description = "Interactive rpm-ostree rollback and rebase helper for Halcyon images."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+brh = "brh:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

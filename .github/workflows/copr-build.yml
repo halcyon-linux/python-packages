@@ -8,7 +8,7 @@
 #
 #   manifest   ci/matrix.py selects packages from the git push (changed dirs
 #              + their BuildRequires dependents) and emits one build_matrix
-#              per batch (all packages here are batch 0 — one wave)
+#              per batch
 #   submit0    pack each package's vendored src/ tree into its Source0
 #              tarball + rpmbuild -bs per package and
 #              `copr-cli build --nowait python-packages <srpm>`; the build id
@@ -107,6 +107,12 @@ jobs:
         # no ci/sweep/ in this repo (halcyon-authored tools have no upstream
         # to sweep — bumps are manual spec edits)
         run: python3 -m py_compile ci/*.py
+      - name: Python package tests
+        run: |
+          set -eu
+          for package in brh bruh gameclass crh; do
+            python3 -m unittest discover -s "pkgs/$package/src/tests" -v
+          done
       - name: Registry consistency + build plan
         run: |
           set -eu
@@ -141,6 +147,7 @@ jobs:
     outputs:
       batches: ${{ steps.split.outputs.batches }}
       batch0: ${{ steps.split.outputs.batch0 }}
+      batch1: ${{ steps.split.outputs.batch1 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -310,3 +317,109 @@ jobs:
           done
           exit $rc
 
+  submit1:
+    name: "submit batch 1"
+    needs: [manifest, wait0]
+    if: needs.manifest.outputs.batch1 != ''
+    strategy:
+      matrix:
+        pkg: ${{ fromJson(needs.manifest.outputs.batch1) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: ghcr.io/halcyon-linux/python-packages-builder:f44
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    steps:
+      - name: Workspace safe
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Copr credentials
+        env:
+          COPR_CLICONF: ${{ secrets.COPR_CLICONF }}
+        run: |
+          set -eu
+          mkdir -p ~/.config
+          printf '%s\n' "$COPR_CLICONF" > ~/.config/copr
+          chmod 600 ~/.config/copr
+      - name: Build the SRPM and submit to Copr
+        env:
+          NAME: ${{ matrix.pkg.name }}
+          PROJECT: ${{ matrix.pkg.labels.project }}
+        run: |
+          set -euo pipefail
+          spec="pkgs/$NAME/$NAME.spec"
+          mkdir -p "_srpms/$NAME"
+          ver=$(sed -n 's/^Version:[[:space:]]*//p' "$spec")
+          [ -n "$ver" ] || { echo "no Version in $spec"; exit 1; }
+          mkdir -p "_srpms/$NAME/$NAME-$ver"
+          cp -a "pkgs/$NAME/src/." "_srpms/$NAME/$NAME-$ver/"
+          tar czf "_srpms/$NAME/$NAME-$ver.tar.gz" -C "_srpms/$NAME" "$NAME-$ver"
+          srpm=$(rpmbuild -bs \
+              --define "_sourcedir $PWD/_srpms/$NAME" \
+              --define "_srcrpmdir $PWD/_srpms" \
+              --define "_specdir $PWD/$(dirname "$spec")" \
+              "$spec" | sed -n 's/^Wrote: //p')
+          [ -n "$srpm" ] || { echo "rpmbuild -bs produced no SRPM"; exit 1; }
+          copr-cli build --nowait "$PROJECT" "$srpm" | tee submit.log
+          id=$(sed -n 's/^Created builds: //p' submit.log)
+          [ -n "$id" ] || { echo "no build id in copr-cli output"; exit 1; }
+          echo "$id" > "build-id-$NAME.txt"
+      - name: Upload the build id
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: "submit-1-${{ matrix.pkg.name }}"
+          path: build-id-*.txt
+          if-no-files-found: error
+          retention-days: 3
+
+  wait1:
+    name: "wait for batch 1"
+    needs: [manifest, submit1]
+    if: always() && (needs.manifest.outputs.batch1 == '' || needs.submit1.result == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    container:
+      image: ghcr.io/halcyon-linux/python-packages-builder:f44
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    steps:
+      - name: Copr credentials
+        if: needs.manifest.outputs.batch1 != ''
+        env:
+          COPR_CLICONF: ${{ secrets.COPR_CLICONF }}
+        run: |
+          set -eu
+          mkdir -p ~/.config
+          printf '%s\n' "$COPR_CLICONF" > ~/.config/copr
+          chmod 600 ~/.config/copr
+      - name: Download the wave's build ids
+        if: needs.manifest.outputs.batch1 != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: "submit-1-*"
+          merge-multiple: true
+          path: ids
+      - name: Watch the wave's builds
+        if: needs.manifest.outputs.batch1 != ''
+        run: |
+          set -eu
+          ids=$(cat ids/build-id-*.txt | tr '\n' ' ')
+          echo "watching builds: $ids"
+          # shellcheck disable=SC2086
+          copr-cli watch-build $ids
+          rc=0
+          # shellcheck disable=SC2086
+          for id in $ids; do
+            status=$(copr-cli status "$id")
+            if [ "$status" != succeeded ]; then
+              echo "build $id: $status"
+              rc=1
+            fi
+          done
+          exit $rc

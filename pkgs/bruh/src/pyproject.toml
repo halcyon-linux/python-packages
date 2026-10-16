@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bruh"
+version = "1.0.0"
+description = "Short argument-forwarding wrapper for the brh rollback helper."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+bruh = "bruh:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
