@@ -20,7 +20,7 @@ BOOT_STATUS_FILE = Path("/etc/motd.d/boot-status")
 NVIDIA_VERSION_FILE = Path("/proc/driver/nvidia/version")
 RPM_OSTREE_TIMEOUT = 1.5
 DISK_WARN_PERCENT = 90
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 def read_image_info(path: Path) -> dict[str, str]:
@@ -77,6 +77,9 @@ def staged_update_lines(raw: str) -> list[str]:
 
 
 def disk_usage_percent(path: str = "/") -> int:
+    # composefs-booted images show a read-only overlay at "/"; the real disk is /sysroot
+    if path == "/" and os.path.ismount("/sysroot"):
+        path = "/sysroot"
     stat = os.statvfs(path)
     used = stat.f_blocks - stat.f_bfree
     total = used + stat.f_bavail
@@ -144,7 +147,10 @@ def banner() -> str:
         "MOTD_TIP": pick_tip(Path(os.environ.get("MOTD_TIP_DIRECTORY", TIPS_DIR))),
     }
     template_path = Path(os.environ.get("MOTD_TEMPLATE_FILE", TEMPLATE_FILE))
-    template = template_path.read_text(encoding="utf-8") if template_path.is_file() else FALLBACK_TEMPLATE
+    try:
+        template = template_path.read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        template = FALLBACK_TEMPLATE
     return render(template, values)
 
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ublue-motd"
-version = "1.0.0"
+version = "1.0.1"
 description = "Login banner for ublue-based bootc images: image info, boot health, staged updates, tips."
 requires-python = ">=3.13"
 license = "Apache-2.0"

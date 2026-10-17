@@ -86,11 +86,40 @@ class StagedUpdateTests(unittest.TestCase):
         self.assertEqual(require("staged_update_lines")("not json"), [])
 
 
+class RpmOstreeStatusTests(unittest.TestCase):
+    def test_success_returns_stdout_and_pins_timeout(self):
+        result = Mock(returncode=0, stdout='{"deployments": []}')
+        with patch.object(ublue_motd.subprocess, "run", return_value=result) as run:
+            self.assertEqual(require("rpm_ostree_status")(), '{"deployments": []}')
+        self.assertEqual(run.call_args.kwargs["timeout"], ublue_motd.RPM_OSTREE_TIMEOUT)
+
+    def test_nonzero_returncode_and_slow_or_missing_binary_yield_empty(self):
+        with patch.object(ublue_motd.subprocess, "run", return_value=Mock(returncode=1, stdout="err")):
+            self.assertEqual(require("rpm_ostree_status")(), "")
+        for error in (ublue_motd.subprocess.TimeoutExpired("rpm-ostree", 1.5), FileNotFoundError("rpm-ostree")):
+            with patch.object(ublue_motd.subprocess, "run", side_effect=error):
+                self.assertEqual(require("rpm_ostree_status")(), "")
+
+
 class DiskTests(unittest.TestCase):
     def test_percent_matches_df_semantics(self):
         fake = os.statvfs_result((4096, 4096, 1000, 100, 50, 0, 0, 0, 0, 255))
         with patch.object(ublue_motd.os, "statvfs", return_value=fake):
             self.assertEqual(require("disk_usage_percent")("/"), 95)
+
+    def test_prefers_sysroot_when_root_is_a_composefs_overlay(self):
+        fake = os.statvfs_result((4096, 4096, 1000, 100, 800, 0, 0, 0, 0, 255))
+        with patch.object(ublue_motd.os.path, "ismount", side_effect=lambda p: p == "/sysroot"), \
+             patch.object(ublue_motd.os, "statvfs", return_value=fake) as statvfs:
+            self.assertEqual(require("disk_usage_percent")(), 53)
+        statvfs.assert_called_once_with("/sysroot")
+
+    def test_uses_root_when_sysroot_is_not_a_mount(self):
+        fake = os.statvfs_result((4096, 4096, 1000, 100, 50, 0, 0, 0, 0, 255))
+        with patch.object(ublue_motd.os.path, "ismount", return_value=False), \
+             patch.object(ublue_motd.os, "statvfs", return_value=fake) as statvfs:
+            self.assertEqual(require("disk_usage_percent")(), 95)
+        statvfs.assert_called_once_with("/")
 
     def test_warning_only_at_threshold(self):
         self.assertEqual(require("disk_lines")(89), [])
@@ -177,6 +206,27 @@ class BannerTests(unittest.TestCase):
             text = require("banner")()
         self.assertIn("Welcome to Halcyon", text)
 
+    def test_template_read_failure_falls_back(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "template.md").write_text("${MOTD_IMAGE_NAME}")
+            real_read_text = Path.read_text
+
+            def flaky(self, *args, **kwargs):
+                if self == tmp / "template.md":
+                    raise OSError("boom")
+                return real_read_text(self, *args, **kwargs)
+
+            env = {"MOTD_TEMPLATE_FILE": str(tmp / "template.md"),
+                   "MOTD_IMAGE_INFO_FILE": "/nonexistent/image.json",
+                   "MOTD_TIP_DIRECTORY": "/nonexistent/tips"}
+            with patch.dict(os.environ, env, clear=False), \
+                 patch.object(ublue_motd.Path, "read_text", flaky), \
+                 patch.object(ublue_motd, "boot_status_lines", return_value=[]), \
+                 patch.object(ublue_motd, "rpm_ostree_status", return_value=""):
+                text = require("banner")()
+        self.assertIn("Welcome to Halcyon", text)
+
 
 class CliTests(unittest.TestCase):
     def test_toggle_round_trip(self):
@@ -207,6 +257,22 @@ class CliTests(unittest.TestCase):
              contextlib.redirect_stdout(io.StringIO()) as out:
             require("show_banner")("hello ${x}")
         self.assertEqual(out.getvalue(), "hello ${x}\n")
+
+    def test_show_banner_glow_pins_width_and_falls_back_on_error(self):
+        with patch.object(ublue_motd.shutil, "which", return_value="/usr/bin/glow"), \
+             patch.object(ublue_motd, "sys", Mock(stdout=Mock(isatty=lambda: True))), \
+             patch.object(ublue_motd.shutil, "get_terminal_size", return_value=os.terminal_size((120, 40))), \
+             patch.object(ublue_motd.subprocess, "run", return_value=Mock(returncode=0)) as run:
+            require("show_banner")("hi")
+        self.assertEqual(run.call_args.args[0], ["glow", "-w", "120", "-"])
+        self.assertEqual(run.call_args.kwargs["input"], "hi")
+
+        with patch.object(ublue_motd.shutil, "which", return_value="/usr/bin/glow"), \
+             patch.object(ublue_motd, "sys", Mock(stdout=Mock(isatty=lambda: True))), \
+             patch.object(ublue_motd.subprocess, "run", return_value=Mock(returncode=1)), \
+             contextlib.redirect_stdout(io.StringIO()) as out:
+            require("show_banner")("hi")
+        self.assertEqual(out.getvalue(), "hi\n")
 
     def test_toggle_without_home_errors_cleanly(self):
         with patch.dict(os.environ, {}, clear=True), \
