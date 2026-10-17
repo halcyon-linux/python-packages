@@ -32,6 +32,7 @@ no upstream tarball: each package's sources are vendored under
 | `rmtmp`            | `rmtmp`            | Root-only secure cleanup of `/tmp` and `/var/tmp`.   |
 | `screenshot`       | `screenshot`       | Wayland screenshot helper.                           |
 | `se`               | `se`               | Search & edit with ripgrep and fzf.                  |
+| `ublue-motd`       | `ublue-motd`       | Login banner: image info, staged updates, tips.      |
 
 Runtime tool dependencies (`fd`, `fzf`, `bat`, `rg`, `grim`, `swappy`,
 `slurp`, `rpm-ostree`, `skopeo`, `sudo`, `systemd`, `wmctrl`, `xdotool`) come from RPM dependencies; tools report
