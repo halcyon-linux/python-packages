@@ -1,2 +1,0 @@
-[console_scripts]
-halcyon-snapper-config = halcyon_snapper_config:main

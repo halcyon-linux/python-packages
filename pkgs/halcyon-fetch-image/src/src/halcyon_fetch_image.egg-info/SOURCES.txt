@@ -1,9 +1,0 @@
-LICENSE
-pyproject.toml
-src/halcyon_fetch_image/__init__.py
-src/halcyon_fetch_image.egg-info/PKG-INFO
-src/halcyon_fetch_image.egg-info/SOURCES.txt
-src/halcyon_fetch_image.egg-info/dependency_links.txt
-src/halcyon_fetch_image.egg-info/entry_points.txt
-src/halcyon_fetch_image.egg-info/top_level.txt
-tests/test_halcyon_fetch_image.py

@@ -1,3 +1,0 @@
-[console_scripts]
-halcyon-nvidia-flatpak-runtime-notify = halcyon_nvidia_flatpak_runtime:notify_main
-halcyon-nvidia-flatpak-runtime-sync = halcyon_nvidia_flatpak_runtime:sync_main

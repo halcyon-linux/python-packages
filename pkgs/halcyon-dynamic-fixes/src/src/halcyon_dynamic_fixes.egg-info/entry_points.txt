@@ -1,2 +1,0 @@
-[console_scripts]
-halcyon-dynamic-fixes = halcyon_dynamic_fixes:main

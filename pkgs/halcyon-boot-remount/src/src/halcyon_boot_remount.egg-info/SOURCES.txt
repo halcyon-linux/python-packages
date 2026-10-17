@@ -1,9 +1,0 @@
-LICENSE
-pyproject.toml
-src/halcyon_boot_remount/__init__.py
-src/halcyon_boot_remount.egg-info/PKG-INFO
-src/halcyon_boot_remount.egg-info/SOURCES.txt
-src/halcyon_boot_remount.egg-info/dependency_links.txt
-src/halcyon_boot_remount.egg-info/entry_points.txt
-src/halcyon_boot_remount.egg-info/top_level.txt
-tests/test_halcyon_boot_remount.py

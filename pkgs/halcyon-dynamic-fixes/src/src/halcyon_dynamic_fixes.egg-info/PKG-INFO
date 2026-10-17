@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: halcyon-dynamic-fixes
-Version: 1.0.0
-Summary: Toggle the GSK_RENDERER=gl workaround when an Intel GPU (xe/i915) is in use.
-License-Expression: Apache-2.0
-Requires-Python: >=3.13
-License-File: LICENSE
-Dynamic: license-file

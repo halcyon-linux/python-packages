@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fetch-image"
+version = "1.0.0"
+description = "Print image name:branch plus a signed/unsigned marker for fastfetch."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+fetch-image = "fetch_image:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

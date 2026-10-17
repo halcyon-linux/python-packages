@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: halcyon-snapper-config
-Version: 1.0.0
-Summary: Manage the root snapper config: enable, clean, wipe, or disable it.
-License-Expression: Apache-2.0
-Requires-Python: >=3.13
-License-File: LICENSE
-Dynamic: license-file

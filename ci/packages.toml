@@ -14,15 +14,16 @@
 # (the registry carries no version field, so nothing else needs syncing) and
 # push; copr-build.yml rebuilds the changed packages.
 #
-# batch 0: bbrew-helper, brh, crh, dump-to-markdown, fconf, fe, ff, fkill,
-#          fp, fssh, gameclass, halcyon-boot-remount, halcyon-dlss-swapper,
-#          halcyon-dynamic-fixes, halcyon-fetch-image, halcyon-hardware-setup,
-#          halcyon-nvidia-flatpak-runtime, halcyon-powersave,
-#          halcyon-snapper-config, halcyon-user-setup, rmi, rmtmp, screenshot,
-#          se, ublue-motd, uupd-update
+# batch 0: bbrew-helper, boot-remount, brh, crh, dlss-swapper, dump-to-markdown,
+#          dynamic-fixes, fconf, fe, fetch-image, ff, fkill, fp, fssh, gameclass,
+#          hardware-setup, nvidia-flatpak-runtime, powersave, rmi, rmtmp,
+#          screenshot, se, snapper-config, ublue-motd, user-setup, uupd-update
 # batch 1: bruh
 
 [bbrew-helper]
+batch = 0
+
+[boot-remount]
 batch = 0
 
 [brh]
@@ -34,13 +35,22 @@ batch = 1
 [crh]
 batch = 0
 
+[dlss-swapper]
+batch = 0
+
 [dump-to-markdown]
+batch = 0
+
+[dynamic-fixes]
 batch = 0
 
 [fconf]
 batch = 0
 
 [fe]
+batch = 0
+
+[fetch-image]
 batch = 0
 
 [ff]
@@ -58,31 +68,13 @@ batch = 0
 [gameclass]
 batch = 0
 
-[halcyon-boot-remount]
+[hardware-setup]
 batch = 0
 
-[halcyon-dlss-swapper]
+[nvidia-flatpak-runtime]
 batch = 0
 
-[halcyon-dynamic-fixes]
-batch = 0
-
-[halcyon-fetch-image]
-batch = 0
-
-[halcyon-hardware-setup]
-batch = 0
-
-[halcyon-nvidia-flatpak-runtime]
-batch = 0
-
-[halcyon-powersave]
-batch = 0
-
-[halcyon-snapper-config]
-batch = 0
-
-[halcyon-user-setup]
+[powersave]
 batch = 0
 
 [rmi]
@@ -97,7 +89,13 @@ batch = 0
 [se]
 batch = 0
 
+[snapper-config]
+batch = 0
+
 [ublue-motd]
+batch = 0
+
+[user-setup]
 batch = 0
 
 [uupd-update]

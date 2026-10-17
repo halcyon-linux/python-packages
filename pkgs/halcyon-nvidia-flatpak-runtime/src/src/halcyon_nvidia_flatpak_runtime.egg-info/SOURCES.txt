@@ -1,9 +1,0 @@
-LICENSE
-pyproject.toml
-src/halcyon_nvidia_flatpak_runtime/__init__.py
-src/halcyon_nvidia_flatpak_runtime.egg-info/PKG-INFO
-src/halcyon_nvidia_flatpak_runtime.egg-info/SOURCES.txt
-src/halcyon_nvidia_flatpak_runtime.egg-info/dependency_links.txt
-src/halcyon_nvidia_flatpak_runtime.egg-info/entry_points.txt
-src/halcyon_nvidia_flatpak_runtime.egg-info/top_level.txt
-tests/test_halcyon_nvidia_flatpak_runtime.py

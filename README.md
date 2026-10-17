@@ -16,38 +16,38 @@ no upstream tarball: each package's sources are vendored under
 
 | Package            | Binary             | Purpose                                              |
 | ------------------ | ------------------ | ---------------------------------------------------- |
-| `bbrew-helper`     | `bbrew-helper`     | Bootstrap Homebrew and launch the bbrew TUI.          |
-| `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.  |
+| `bbrew-helper`     | `bbrew-helper`     | Bootstrap Homebrew and launch the bbrew TUI.         |
+| `boot-remount`     | `boot-remount`     | Remount `/boot` read-write around grub recipes, then restore. |
+| `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.   |
 | `bruh`             | `bruh`             | Short alias wrapper; `bruh moment` forwards to rollback. |
 | `crh`              | `crh`              | Custom resolution and EDID helper.                   |
+| `dlss-swapper`     | `dlss-swapper`, `dlss-swapper-dll` | Steam launch wrappers forcing the latest DLSS presets. |
 | `dump-to-markdown` | `dump-to-markdown` | Dump a project tree into one Markdown document.      |
+| `dynamic-fixes`    | `dynamic-fixes`    | Toggle the Intel GTK renderer workaround per session. |
 | `fconf`            | `fconf`            | Fuzzy configuration finder/editor.                   |
 | `fe`               | `fe`               | Fuzzy edit — pick a file, open in `$EDITOR`.         |
+| `fetch-image`      | `fetch-image`      | fastfetch helper: image name and signature marker.   |
 | `ff`               | `ff`               | Fast file finder wrapping `fd`.                      |
 | `fkill`            | `fkill`            | Fuzzy process killer.                                |
 | `fp`               | `fp`               | Fuzzy file/directory previewer.                      |
 | `fssh`             | `fssh`             | Fuzzy SSH launcher.                                  |
 | `gameclass`        | `gameclass`        | Set WM_CLASS for a wrapped game command.             |
-| `halcyon-boot-remount` | `halcyon-boot-remount` | Remount `/boot` read-write around grub recipes, then restore. |
-| `halcyon-dlss-swapper` | `halcyon-dlss-swapper`, `halcyon-dlss-swapper-dll` | Steam launch wrappers forcing the latest DLSS presets. |
-| `halcyon-dynamic-fixes` | `halcyon-dynamic-fixes` | Toggle the Intel GTK renderer workaround per session. |
-| `halcyon-fetch-image` | `halcyon-fetch-image` | fastfetch helper: image name and signature marker.   |
-| `halcyon-hardware-setup` | `halcyon-hardware-setup` | One-shot host setup: kargs, hostname, image state. |
-| `halcyon-nvidia-flatpak-runtime` | `halcyon-nvidia-flatpak-runtime-sync`, `-notify` | Keep NVIDIA flatpak runtimes in step with the driver. |
-| `halcyon-powersave` | `halcyon-powersave` | Switch the power-profiles-daemon active profile.     |
-| `halcyon-snapper-config` | `halcyon-snapper-config` | Enable, clean, wipe, or disable the root snapper config. |
-| `halcyon-user-setup` | `halcyon-user-setup`, `halcyon-privileged-user-setup` | Per-user setup, polkit helper, template symlinks. |
+| `hardware-setup`   | `hardware-setup`   | One-shot host setup: kargs, hostname, image state.   |
+| `nvidia-flatpak-runtime` | `nvidia-flatpak-runtime-sync`, `-notify` | Keep NVIDIA flatpak runtimes in step with the driver. |
+| `powersave`        | `powersave`        | Switch the power-profiles-daemon active profile.     |
 | `rmi`              | `rmi`              | Safe removal to the XDG trash.                       |
 | `rmtmp`            | `rmtmp`            | Root-only secure cleanup of `/tmp` and `/var/tmp`.   |
 | `screenshot`       | `screenshot`       | Wayland screenshot helper.                           |
 | `se`               | `se`               | Search & edit with ripgrep and fzf.                  |
+| `snapper-config`   | `snapper-config`   | Enable, clean, wipe, or disable the root snapper config. |
 | `ublue-motd`       | `ublue-motd`       | Login banner: image info, staged updates, tips.      |
+| `user-setup`       | `user-setup`, `privileged-user-setup` | Per-user setup, polkit helper, template symlinks.    |
 | `uupd-update`      | `uupd-update`      | Front-end for `ujust update`: attach to or start the uupd service, stream its journal. |
 
 Runtime tool dependencies (`fd`, `fzf`, `bat`, `rg`, `glow`, `grim`, `swappy`,
 `slurp`, `rpm-ostree`, `skopeo`, `sudo`, `systemd`, `wmctrl`, `xdotool`) come from RPM dependencies; tools report
-failures when a required command cannot run. The `halcyon-*` ports replace
-former image-owned shell helpers and additionally require `flatpak`,
+failures when a required command cannot run. These ports replace former
+image-owned shell helpers and additionally require `flatpak`,
 `snapper`, `zenity`, `btrfs-assistant`, `polkit`, `libnotify`, `xdg-utils`,
 `xdg-user-dirs`, and `util-linux-core`.
 

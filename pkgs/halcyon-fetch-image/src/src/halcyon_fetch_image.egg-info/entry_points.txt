@@ -1,2 +1,0 @@
-[console_scripts]
-halcyon-fetch-image = halcyon_fetch_image:main

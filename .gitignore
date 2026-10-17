@@ -11,6 +11,9 @@ TaskNotes/
 *.rpm
 *.zst
 __pycache__/
+build/
+dist/
+*.egg-info/
 # texlive-pkg tlpdb fetch cache
 .cache/
 

@@ -1,9 +1,0 @@
-LICENSE
-pyproject.toml
-src/halcyon_powersave/__init__.py
-src/halcyon_powersave.egg-info/PKG-INFO
-src/halcyon_powersave.egg-info/SOURCES.txt
-src/halcyon_powersave.egg-info/dependency_links.txt
-src/halcyon_powersave.egg-info/entry_points.txt
-src/halcyon_powersave.egg-info/top_level.txt
-tests/test_halcyon_powersave.py
