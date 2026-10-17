@@ -1,0 +1,9 @@
+LICENSE
+pyproject.toml
+src/halcyon_dynamic_fixes/__init__.py
+src/halcyon_dynamic_fixes.egg-info/PKG-INFO
+src/halcyon_dynamic_fixes.egg-info/SOURCES.txt
+src/halcyon_dynamic_fixes.egg-info/dependency_links.txt
+src/halcyon_dynamic_fixes.egg-info/entry_points.txt
+src/halcyon_dynamic_fixes.egg-info/top_level.txt
+tests/test_halcyon_dynamic_fixes.py

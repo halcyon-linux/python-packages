@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "halcyon-nvidia-flatpak-runtime"
+version = "1.0.0"
+description = "Check, install, and notify about NVIDIA Flatpak runtimes matching the system driver."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+halcyon-nvidia-flatpak-runtime-sync = "halcyon_nvidia_flatpak_runtime:sync_main"
+halcyon-nvidia-flatpak-runtime-notify = "halcyon_nvidia_flatpak_runtime:notify_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

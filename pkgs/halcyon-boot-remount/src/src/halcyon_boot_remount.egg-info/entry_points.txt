@@ -1,0 +1,2 @@
+[console_scripts]
+halcyon-boot-remount = halcyon_boot_remount:main

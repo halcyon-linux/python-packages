@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "halcyon-hardware-setup"
+version = "1.0.0"
+description = "One-shot host setup: kernel args, hostname, and image identity state."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+halcyon-hardware-setup = "halcyon_hardware_setup:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

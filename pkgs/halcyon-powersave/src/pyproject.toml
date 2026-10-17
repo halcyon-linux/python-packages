@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "halcyon-powersave"
+version = "1.0.0"
+description = "Switch the power-profiles-daemon active profile from the command line."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+halcyon-powersave = "halcyon_powersave:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

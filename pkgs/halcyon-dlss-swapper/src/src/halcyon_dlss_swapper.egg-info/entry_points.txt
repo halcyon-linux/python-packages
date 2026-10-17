@@ -1,0 +1,3 @@
+[console_scripts]
+halcyon-dlss-swapper = halcyon_dlss_swapper:main
+halcyon-dlss-swapper-dll = halcyon_dlss_swapper:dll_main

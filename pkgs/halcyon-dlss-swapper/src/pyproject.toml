@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "halcyon-dlss-swapper"
+version = "1.0.0"
+description = "Steam launch wrappers that force the latest DLSS presets via DXVK-NVAPI."
+requires-python = ">=3.13"
+license = "GPL-3.0-only"
+
+[project.scripts]
+halcyon-dlss-swapper = "halcyon_dlss_swapper:main"
+halcyon-dlss-swapper-dll = "halcyon_dlss_swapper:dll_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

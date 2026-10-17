@@ -1,0 +1,2 @@
+[console_scripts]
+halcyon-powersave = halcyon_powersave:main

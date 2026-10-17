@@ -1,0 +1,2 @@
+[console_scripts]
+halcyon-hardware-setup = halcyon_hardware_setup:main

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if (( EUID < 1000 )); then
+    echo "Bazzite user setup ran as an unsupported user. Exiting."
+    exit 0
+fi
+
+image_info=/usr/share/ublue-os/image-info.json
+image_name=$(jq -r '."image-name"' "$image_info")
+fedora_version=$(jq -r '."fedora-version"' "$image_info")
+
+bazzite_config_dir="${XDG_DATA_HOME:-$HOME/.local/share}/bazzite"
+mkdir -p "$bazzite_config_dir"
+
+setup_version=58
+version_file="$bazzite_config_dir/version"
+fedora_version_file="$bazzite_config_dir/fedora_version"
+image_name_file="$bazzite_config_dir/image_name"
+
+if [[ -f "$HOME/.bazzite-configured" ]]; then
+    mv -f "$HOME/.bazzite-configured" "$version_file"
+fi
+if [[ -f "$HOME/.bazzite-configured-fedora-version" ]]; then
+    mv -f "$HOME/.bazzite-configured-fedora-version" "$fedora_version_file"
+fi
+
+if [[ -f "$version_file" && -f "$fedora_version_file" && -f "$image_name_file" ]] && \
+    [[ $(<"$version_file") == "$setup_version" ]] && \
+    [[ $(<"$fedora_version_file") == "$fedora_version" ]] && \
+    [[ $(<"$image_name_file") == "$image_name" ]]; then
+    echo "User setup v$setup_version has already run. Exiting."
+    exit 0
+fi
+
+pkexec /usr/libexec/bazzite-privileged-user-setup "$USER"
+
+templates_dir=$(xdg-user-dir TEMPLATES 2>/dev/null || true)
+if [[ -z "$templates_dir" || "$templates_dir" == "$HOME" ]]; then
+    templates_dir="$HOME/Templates"
+fi
+mkdir -p "$templates_dir"
+
+for template in \
+    "/etc/vkBasalt.conf" \
+    "/etc/dxvk-example.conf" \
+    "/usr/share/doc/mangohud/MangoHud.conf.example"; do
+    [[ -f "$template" ]] || continue
+    target="$templates_dir/${template##*/}"
+    [[ -e "$target" ]] || ln -s "$template" "$target"
+done
+
+printf '%s\n' "$setup_version" > "$version_file"
+printf '%s\n' "$fedora_version" > "$fedora_version_file"
+printf '%s\n' "$image_name" > "$image_name_file"

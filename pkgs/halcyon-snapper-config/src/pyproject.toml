@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "halcyon-snapper-config"
+version = "1.0.0"
+description = "Manage the root snapper config: enable, clean, wipe, or disable it."
+requires-python = ">=3.13"
+license = "Apache-2.0"
+
+[project.scripts]
+halcyon-snapper-config = "halcyon_snapper_config:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

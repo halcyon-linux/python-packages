@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+
+set -Eeuo pipefail
+
+profile=power-saver
+if [[ ${1:-1} == 0 ]]; then
+    profile=balanced
+fi
+
+exec gdbus call --system \
+    --dest net.hadess.PowerProfiles \
+    --object-path /net/hadess/PowerProfiles \
+    --method org.freedesktop.DBus.Properties.Set \
+    net.hadess.PowerProfiles ActiveProfile "<'${profile}'>"

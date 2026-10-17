@@ -1,0 +1,3 @@
+[console_scripts]
+halcyon-privileged-user-setup = halcyon_user_setup:privileged_main
+halcyon-user-setup = halcyon_user_setup:main

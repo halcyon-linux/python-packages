@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+# Enable NTP
+timedatectl set-ntp true
+
+# Allow Tailscale Control
+tailscale set --operator="$(systemd-escape "$1")"
+
+# Let the user manage system VMs without a password prompt (virtualization is
+# enabled by default; see libvirt-daemon and 50-libvirt.rules).
+if getent group libvirt >/dev/null; then
+    usermod -aG libvirt "$1"
+fi

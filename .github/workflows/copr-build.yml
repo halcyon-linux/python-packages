@@ -110,7 +110,7 @@ jobs:
       - name: Python package tests
         run: |
           set -eu
-          for package in bbrew-helper brh bruh crh gameclass ublue-motd uupd-update; do
+          for package in bbrew-helper brh bruh crh gameclass halcyon-boot-remount halcyon-dlss-swapper halcyon-dynamic-fixes halcyon-fetch-image halcyon-hardware-setup halcyon-nvidia-flatpak-runtime halcyon-powersave halcyon-snapper-config halcyon-user-setup ublue-motd uupd-update; do
             python3 -m unittest discover -s "pkgs/$package/src/tests" -v
           done
       - name: Registry consistency + build plan

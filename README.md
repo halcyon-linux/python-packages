@@ -28,6 +28,15 @@ no upstream tarball: each package's sources are vendored under
 | `fp`               | `fp`               | Fuzzy file/directory previewer.                      |
 | `fssh`             | `fssh`             | Fuzzy SSH launcher.                                  |
 | `gameclass`        | `gameclass`        | Set WM_CLASS for a wrapped game command.             |
+| `halcyon-boot-remount` | `halcyon-boot-remount` | Remount `/boot` read-write around grub recipes, then restore. |
+| `halcyon-dlss-swapper` | `halcyon-dlss-swapper`, `halcyon-dlss-swapper-dll` | Steam launch wrappers forcing the latest DLSS presets. |
+| `halcyon-dynamic-fixes` | `halcyon-dynamic-fixes` | Toggle the Intel GTK renderer workaround per session. |
+| `halcyon-fetch-image` | `halcyon-fetch-image` | fastfetch helper: image name and signature marker.   |
+| `halcyon-hardware-setup` | `halcyon-hardware-setup` | One-shot host setup: kargs, hostname, image state. |
+| `halcyon-nvidia-flatpak-runtime` | `halcyon-nvidia-flatpak-runtime-sync`, `-notify` | Keep NVIDIA flatpak runtimes in step with the driver. |
+| `halcyon-powersave` | `halcyon-powersave` | Switch the power-profiles-daemon active profile.     |
+| `halcyon-snapper-config` | `halcyon-snapper-config` | Enable, clean, wipe, or disable the root snapper config. |
+| `halcyon-user-setup` | `halcyon-user-setup`, `halcyon-privileged-user-setup` | Per-user setup, polkit helper, template symlinks. |
 | `rmi`              | `rmi`              | Safe removal to the XDG trash.                       |
 | `rmtmp`            | `rmtmp`            | Root-only secure cleanup of `/tmp` and `/var/tmp`.   |
 | `screenshot`       | `screenshot`       | Wayland screenshot helper.                           |
@@ -37,7 +46,10 @@ no upstream tarball: each package's sources are vendored under
 
 Runtime tool dependencies (`fd`, `fzf`, `bat`, `rg`, `glow`, `grim`, `swappy`,
 `slurp`, `rpm-ostree`, `skopeo`, `sudo`, `systemd`, `wmctrl`, `xdotool`) come from RPM dependencies; tools report
-failures when a required command cannot run.
+failures when a required command cannot run. The `halcyon-*` ports replace
+former image-owned shell helpers and additionally require `flatpak`,
+`snapper`, `zenity`, `btrfs-assistant`, `polkit`, `libnotify`, `xdg-utils`,
+`xdg-user-dirs`, and `util-linux-core`.
 
 ## CI
 

@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# One-shot hardware setup for the current machine. Runs from
+# bazzite-hardware-setup.service and re-runs whenever the image identity
+# (name/branch/Fedora version) or HWS_VER changes.
+
+IMAGE_INFO="/usr/share/ublue-os/image-info.json"
+STATE_DIR="/etc/bazzite"
+HWS_VER=81
+
+read_state_file() {
+    if [[ -f "${STATE_DIR}/${1}" ]]; then
+        cat "${STATE_DIR}/${1}"
+    fi
+}
+
+read_image_info() {
+    IMAGE_NAME=$(jq -r '."image-name"' "${IMAGE_INFO}")
+    IMAGE_BRANCH=$(jq -r '."image-branch"' "${IMAGE_INFO}")
+    FEDORA_VERSION=$(jq -r '."fedora-version"' "${IMAGE_INFO}")
+}
+
+read_previous_state() {
+    KNOWN_HWS_VERSION=$(read_state_file hws_version)
+    KNOWN_IMAGE_NAME=$(read_state_file image_name)
+    KNOWN_IMAGE_BRANCH=$(read_state_file image_branch)
+    KNOWN_FEDORA_VERSION=$(read_state_file fedora_version)
+}
+
+already_configured() {
+    [[ "${KNOWN_HWS_VERSION}" == "${HWS_VER}" ]] &&
+        [[ "${KNOWN_IMAGE_NAME}" == "${IMAGE_NAME}" ]] &&
+        [[ "${KNOWN_IMAGE_BRANCH}" == "${IMAGE_BRANCH}" ]] &&
+        [[ "${KNOWN_FEDORA_VERSION}" == "${FEDORA_VERSION}" ]]
+}
+
+apply_kargs() {
+    local kargs
+    local -a needed=()
+
+    kargs=$(rpm-ostree kargs)
+    echo "Current kargs: ${kargs}"
+
+    if [[ ! "${kargs}" =~ disable_ertm ]]; then
+        echo "Adding needed kargs for bluetooth"
+        needed+=("--append-if-missing=bluetooth.disable_ertm=1")
+    fi
+
+    # Virtualization is enabled by default; keep these in sync with the
+    # kargs of `ujust setup-virtualization`.
+    if [[ ! "${kargs}" =~ kvm.ignore_msrs=1 ]]; then
+        echo "Adding needed kargs for virtualization"
+        needed+=("--append-if-missing=kvm.ignore_msrs=1")
+    fi
+
+    if [[ ! "${kargs}" =~ kvm.report_ignored_msrs=0 ]]; then
+        echo "Adding needed kargs for virtualization"
+        needed+=("--append-if-missing=kvm.report_ignored_msrs=0")
+    fi
+
+    if [[ "${kargs}" =~ nomodeset ]]; then
+        echo "Removing nomodeset"
+        needed+=("--delete-if-present=nomodeset")
+    fi
+
+    if ((${#needed[@]} == 0)); then
+        echo "No karg changes needed"
+        return 1
+    fi
+
+    echo "Found needed karg changes, applying the following: ${needed[*]}"
+    plymouth display-message --text="Preparing System - Please wait, this may take a while" || true
+    rpm-ostree kargs "${needed[@]}" || exit 1
+}
+
+fix_hostname() {
+    # Distrobox fails during setup when the hostname is longer than 20 characters.
+    if (($(hostname | wc -m) > 20)); then
+        hostnamectl set-hostname bazzite
+    fi
+
+    # Distrobox also needs /etc/hostname to exist.
+    if [[ ! -f /etc/hostname ]]; then
+        touch /etc/hostname
+    fi
+}
+
+write_state() {
+    mkdir -p "${STATE_DIR}"
+    printf '%s\n' "${HWS_VER}" > "${STATE_DIR}/hws_version"
+    printf '%s\n' "${IMAGE_NAME}" > "${STATE_DIR}/image_name"
+    printf '%s\n' "${IMAGE_BRANCH}" > "${STATE_DIR}/image_branch"
+    printf '%s\n' "${FEDORA_VERSION}" > "${STATE_DIR}/fedora_version"
+}
+
+main() {
+    read_image_info
+    read_previous_state
+
+    if already_configured; then
+        echo "Hardware setup already ran for version ${KNOWN_HWS_VERSION}, skipping"
+        exit 0
+    fi
+
+    fix_hostname
+
+    local should_reboot=false
+    if apply_kargs; then
+        should_reboot=true
+    fi
+
+    write_state
+
+    if [[ "${should_reboot}" == true ]]; then
+        echo "Rebooting to apply karg changes"
+        reboot
+    fi
+}
+
+main "$@"
