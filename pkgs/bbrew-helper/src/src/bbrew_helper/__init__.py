@@ -12,6 +12,9 @@ from collections.abc import Sequence
 BREW_PATH = "/home/linuxbrew/.linuxbrew/bin/brew"
 BBREW_FORMULA = "Valkyrie00/homebrew-bbrew/bbrew"
 EXPORT_PATTERN = re.compile(r"export ([A-Za-z_][A-Za-z0-9_]*)=(.*)")
+PARAMETER_EXPANSION = re.compile(
+    r"\$\{([A-Za-z_][A-Za-z0-9_]*)(\+:\$[A-Za-z_][A-Za-z0-9_]*|:-)?\}"
+)
 
 
 def run_command(
@@ -41,8 +44,17 @@ def brew_environment(brew: str) -> dict[str, str]:
         name, value = match.group(1), match.group(2).strip().rstrip(";")
         if len(value) > 1 and value.startswith('"') and value.endswith('"'):
             value = value[1:-1]
-        value = value.replace("${PATH+:$PATH}", f":{environment.get('PATH', '')}")
-        value = value.replace("${INFOPATH:-}", environment.get("INFOPATH", ""))
+
+        def expand(match: re.Match[str]) -> str:
+            variable, operator = match.groups()
+            current = environment.get(variable, "")
+            if operator == "+:$" + variable:
+                return f":{current}" if variable in environment else ""
+            if operator == ":-":
+                return current
+            return current
+
+        value = PARAMETER_EXPANSION.sub(expand, value)
         environment[name] = value
     return environment
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shlex
@@ -12,6 +13,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 OS_RELEASE = Path("/etc/os-release")
+IMAGE_INFO = Path("/usr/share/ublue-os/image-info.json")
 DRM_ROOT = Path("/sys/class/drm")
 CRH_TMP = Path("/tmp/crh")
 FIRMWARE_EDID = Path("/usr/local/lib/firmware/edid/edid.bin")
@@ -28,6 +30,41 @@ def read_ostree_version(path: Path = OS_RELEASE) -> str:
             except (ValueError, IndexError):
                 return ""
     return ""
+
+
+def read_base_image_name(path: Path = IMAGE_INFO) -> str:
+    """Read the image-info field used for the Kinoite advisory."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    value = data.get("base-image-name") if isinstance(data, dict) else None
+    if value is None:
+        return "null"
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        return str(value).lower()
+    return str(value)
+
+
+def announce_kinoite_resolution_support() -> None:
+    """Show the same KScreen advisory as the shell helper on Kinoite."""
+    if read_base_image_name() != "kinoite":
+        return
+    print(
+        f"\n{_style('KDE Plasma 6.6+', '32')} adds the ability to add "
+        f"{_style('custom resolutions', '1')} and "
+        f"{_style('virtual-monitors', '1')} in "
+        f"{_style('kscreen-doctor', '32')}!\n"
+        "Use that instead if you do not need a custom resolution for Game Mode "
+        "or Sunshine.\n"
+        "A helper to add a Sunshine app to create virtual monitors according "
+        "to client resolution is available in Bazzite Portal; and an updated "
+        "guide is available on "
+        f"{_style('https://docs.bazzite.gg/Advanced/custom_resolution/', '1')}\n"
+    )
+    press_any_key()
 
 
 def run_command(
@@ -502,6 +539,7 @@ def main(argv: list[str] | None = None) -> int:
                 "You can check via rpm-ostree status."
             )
             return 1
+        announce_kinoite_resolution_support()
         command = args[0] if args else ""
         if command == "current":
             print_status()

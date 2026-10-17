@@ -8,8 +8,8 @@ import shlex
 import subprocess
 import sys
 import threading
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 
 def parse_gameclass(value: str) -> tuple[str, str]:

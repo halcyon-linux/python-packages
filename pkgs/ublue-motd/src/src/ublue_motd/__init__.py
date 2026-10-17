@@ -108,15 +108,34 @@ def system_line(kernel: str, nvidia: str) -> str:
 
 
 def pick_tip(tips_dir: Path) -> str:
-    """One random non-empty line from tips/*.md, or "" when nothing to pick."""
+    """One random non-empty line from tips/*.md, or "" when none are present."""
     lines = []
     for tip in sorted(tips_dir.glob("*.md")):
         try:
-            lines.extend(line.strip() for line in tip.read_text(encoding="utf-8").splitlines())
+            lines.extend(
+                line.strip()
+                for line in tip.read_text(encoding="utf-8").splitlines()
+            )
         except (OSError, ValueError):
             continue
     lines = [line for line in lines if line]
     return random.choice(lines) if lines else ""
+
+
+def image_info_value(info: dict[str, str], key: str) -> str:
+    """A jq -r field value, including jq's "null" text for missing fields."""
+    return info.get(key, "null" if info else "")
+
+
+def greenboot_value(path: Path = BOOT_STATUS_FILE) -> str:
+    """MOTD_GREENBOOT from the project's shell environment helper."""
+    try:
+        content = path.read_text(encoding="utf-8").rstrip("\n")
+    except (OSError, ValueError):
+        return ""
+    if "status is GREEN" in content:
+        return "Boot Status: Healthy 󰄳"
+    return content
 
 
 FALLBACK_TEMPLATE = """# Welcome to Halcyon 󰊴
@@ -132,26 +151,37 @@ def render(template_text: str, values: dict[str, str]) -> str:
 
 def banner() -> str:
     """Assemble the banner text from local facts; every failure omits its line."""
-    info = read_image_info(Path(os.environ.get("MOTD_IMAGE_INFO_FILE", IMAGE_INFO_FILE)))
+    info_path = Path(os.environ.get("MOTD_IMAGE_INFO_FILE") or IMAGE_INFO_FILE)
+    info = read_image_info(info_path)
     version = info.get("version", "")
+    locale = os.environ.get("LC_MESSAGES") or os.environ.get("LANG") or "C"
+    template_default = TEMPLATE_FILE
+    tips_default = TIPS_DIR
+    if locale.startswith("sv"):
+        template_default = TEMPLATE_FILE.with_name("template.sv.md")
+        tips_default = TIPS_DIR / "sv"
+    tip_directory = Path(os.environ.get("MOTD_TIP_DIRECTORY") or tips_default)
+    tip = os.environ.get("MOTD_TIP") or pick_tip(tip_directory)
     values = {
-        "MOTD_IMAGE_NAME": strip_image_ref(info.get("image-ref", "")),
-        "MOTD_IMAGE_BRANCH": info.get("image-branch", ""),
+        "MOTD_IMAGE_NAME": strip_image_ref(image_info_value(info, "image-ref")),
+        "MOTD_IMAGE_BRANCH": image_info_value(info, "image-branch"),
+        "MOTD_IMAGE_TAG": image_info_value(info, "image-tag"),
         "MOTD_IMAGE_BUILD": f" (build {version})" if version else "",
+        "MOTD_GREENBOOT": greenboot_value(),
         "MOTD_STATUS": "\n".join(
             boot_status_lines(BOOT_STATUS_FILE)
             + staged_update_lines(rpm_ostree_status())
             + disk_lines(disk_usage_percent())
         ),
         "MOTD_SYSTEM": system_line(os.uname().release, nvidia_version(NVIDIA_VERSION_FILE)),
-        "MOTD_TIP": pick_tip(Path(os.environ.get("MOTD_TIP_DIRECTORY", TIPS_DIR))),
+        "MOTD_TIP": tip,
     }
-    template_path = Path(os.environ.get("MOTD_TEMPLATE_FILE", TEMPLATE_FILE))
+    template_path = Path(os.environ.get("MOTD_TEMPLATE_FILE") or template_default)
     try:
         template = template_path.read_text(encoding="utf-8")
     except (OSError, ValueError):
         template = FALLBACK_TEMPLATE
-    return render(template, values)
+    return render(template, {**os.environ, **values})
 
 
 def show_banner(text: str) -> None:

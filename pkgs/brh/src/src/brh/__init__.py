@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 IMAGE_INFO = Path("/usr/share/ublue-os/image-info.json")
 ISSUES_URL = "https://github.com/halcyon-linux/bazzite-fork/issues"
@@ -141,6 +142,63 @@ def confirm(message: str) -> bool | None:
     return not reply or reply.lower().startswith("y")
 
 
+def current_de() -> str:
+    """Detect the active desktop environment using the shell helper's rules."""
+    if (
+        "GNOME" in os.environ.get("XDG_CURRENT_DESKTOP", "")
+        or "gnome" in os.environ.get("DESKTOP_SESSION", "")
+        or shutil.which("gnome-shell")
+    ):
+        return "gnome"
+    if (
+        "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "")
+        or "plasma" in os.environ.get("DESKTOP_SESSION", "")
+        or shutil.which("plasmashell")
+    ):
+        return "kde"
+    return "unknown"
+
+
+def target_de(image: str) -> str:
+    """The desktop environment implied by a Bazzite image name."""
+    return "GNOME" if "gnome" in image else "KDE/Plasma"
+
+
+def target_image_name(target: str, config: ImageConfig) -> str:
+    """Extract the target image name for the desktop mismatch warning."""
+    if target.startswith("ostree-"):
+        return target.rsplit("/", 1)[-1].split(":", 1)[0]
+    if ":" in target:
+        return target.split(":", 1)[0]
+    return config.image
+
+
+def warn_if_de_mismatch(image: str) -> bool:
+    """Ask before switching between GNOME and KDE/Plasma, as the shell did."""
+    current = current_de()
+    target = target_de(image)
+    if (current == "gnome" and target != "GNOME") or (
+        current == "kde" and target == "GNOME"
+    ):
+        message = (
+            f"You're running {('GNOME' if current == 'gnome' else 'KDE/Plasma')} "
+            f"but switching to {target} ({image})"
+        )
+        print()
+        print(_style("⚠️  DESKTOP ENVIRONMENT WARNING ⚠️", "1;31"))
+        print(_style(message, "33"))
+        print(
+            _style(
+                "Switching DEs may cause issues and is unsupported. "
+                "Consider backing up data.",
+                "33",
+            )
+        )
+        print()
+        return bool(confirm("Continue anyway?"))
+    return True
+
+
 def press_any_key() -> None:
     print("Press Enter to continue...")
     try:
@@ -214,6 +272,8 @@ def current() -> None:
 
 
 def rebase_to(config: ImageConfig, target: str, skip_confirm: bool = False) -> int:
+    if not warn_if_de_mismatch(target_image_name(target, config)):
+        return 1
     full_ref = build_rebase_ref(target, config)
     print(f"Rebasing to: {_style(full_ref, '1')}")
     if not skip_confirm and not confirm("Continue?"):
