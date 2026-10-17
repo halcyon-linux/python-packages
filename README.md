@@ -33,6 +33,7 @@ no upstream tarball: each package's sources are vendored under
 | `screenshot`       | `screenshot`       | Wayland screenshot helper.                           |
 | `se`               | `se`               | Search & edit with ripgrep and fzf.                  |
 | `ublue-motd`       | `ublue-motd`       | Login banner: image info, staged updates, tips.      |
+| `uupd-update`      | `uupd-update`      | Front-end for `ujust update`: attach to or start the uupd service, stream its journal. |
 
 Runtime tool dependencies (`fd`, `fzf`, `bat`, `rg`, `grim`, `swappy`,
 `slurp`, `rpm-ostree`, `skopeo`, `sudo`, `systemd`, `wmctrl`, `xdotool`) come from RPM dependencies; tools report
