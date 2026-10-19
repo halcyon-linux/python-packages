@@ -20,6 +20,7 @@ no upstream tarball: each package's sources are vendored under
 | `boot-remount`     | `boot-remount`     | Remount `/boot` read-write around grub recipes, then restore. |
 | `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.   |
 | `bruh`             | `bruh`             | Short alias wrapper; `bruh moment` forwards to rollback. |
+| `commitpickle`     | `commitpickle`     | Generate Conventional Commit messages with OpenCode; review, then commit. |
 | `crh`              | `crh`              | Custom resolution and EDID helper.                   |
 | `dlss-swapper`     | `dlss-swapper`, `dlss-swapper-dll` | Steam launch wrappers forcing the latest DLSS presets. |
 | `dump-to-markdown` | `dump-to-markdown` | Dump a project tree into one Markdown document.      |
@@ -50,6 +51,10 @@ failures when a required command cannot run. These ports replace former
 image-owned shell helpers and additionally require `flatpak`,
 `snapper`, `zenity`, `btrfs-assistant`, `polkit`, `libnotify`, `xdg-utils`,
 `xdg-user-dirs`, and `util-linux-core`.
+
+`commitpickle` additionally requires `opencode`. Fedora does not package it;
+Terra provides a v1 build, and halcyon images get v2 from the sibling
+`cli-tools` Copr (priority 1).
 
 ## CI
 

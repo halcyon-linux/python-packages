@@ -54,8 +54,8 @@ mock -r /tmp/copr.cfg <srpm>
   registry is the build selection. Adding a package = 3 items:
   `pkgs/<pkg>/<pkg>.spec` (start from
   `templates/python-vendored.spec.tmpl`), the vendored tree under
-  `pkgs/<pkg>/src/` (`pyproject.toml` + `src/` + `tests/` if present +
-  `LICENSE`), and the registry entry (`batch = 0`). Never commit
+  `pkgs/<pkg>/src/` (`pyproject.toml` + `README.md` + `src/` + `tests/` if
+  present + `LICENSE`), and the registry entry (`batch = 0`). Never commit
   `__pycache__/`, `*.pyc` or `*.egg-info` (the `.gitignore` already excludes
   them).
 - **Packages without internal dependencies are batch 0.** A package that
@@ -77,10 +77,11 @@ mock -r /tmp/copr.cfg <srpm>
     inside comments too.
   - stdlib-only keeps Python Requires to the automatic python ABI dep, but
     every external helper a tool shells out to (`fd`, `fzf`, `bat`, `rg`,
-    `grim`, …) is a hard `Requires:` (binary map: `fd` → `fd-find`, `rg` →
-    `ripgrep`, `ps` → `procps-ng`, `ssh` → `openssh-clients`) so a plain
-    install pulls a working tool. No editor Requires — `$EDITOR` is user
-    choice (the image already ships neovim).
+    `grim`, `opencode`, …) is a hard `Requires:` (binary map: `fd` → `fd-find`,
+    `rg` → `ripgrep`, `ps` → `procps-ng`, `ssh` → `openssh-clients`) so a plain
+    install pulls a working tool. `opencode` is not in Fedora: Terra provides
+    it, and the image gets v2 from the cli-tools Copr. No editor Requires —
+    `$EDITOR` is user choice (the image already ships neovim).
   - the `%pyproject_save_files -l <module>` argument is the import name,
     not the package name, when they differ (`dump_to_markdown`).
   - console scripts land in `%{_bindir}` and are claimed explicitly in
@@ -95,7 +96,7 @@ mock -r /tmp/copr.cfg <srpm>
   — repoclosure installs it and checks the project's closure against
   Fedora (+ Terra), exactly what a halcyon-image consumer sees. Sibling
   group repos are intentionally absent: these packages depend on nothing
-  outside Fedora, so the union adds no coverage.
+  outside Fedora/Terra, so the union adds no coverage.
 - **CI authentication**: the `COPR_CLICONF` GitHub secret drives every
   copr-cli step. The Copr API token expires — a wave of 401s in
   copr-build.yml means: regenerate at

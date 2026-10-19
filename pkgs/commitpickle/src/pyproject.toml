@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commitpickle"
+dynamic = ["version"]
+description = "Generate two-part Conventional Commit messages with OpenCode's free models"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+keywords = ["git", "commit", "conventional-commits", "opencode", "lazygit"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Version Control :: Git",
+]
+dependencies = []          # standard library only: friendly to RPM packaging
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+commitpickle = "commitpickle.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "commitpickle.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "PL"]
+ignore = ["PLR2004"]
