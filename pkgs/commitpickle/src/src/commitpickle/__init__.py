@@ -1,3 +1,3 @@
-"""commitpickle: two-part Conventional Commit messages from OpenCode's free models."""
+"""commitpickle: Conventional Commit suggestions from Claude Haiku via the claude CLI."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

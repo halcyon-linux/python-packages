@@ -37,12 +37,12 @@ import argparse
 import logging
 import os
 import re
-import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator, List, Optional, Set
+from typing import List, Optional, Set
+from collections.abc import Iterator
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 __all__ = [
     "DEFAULT_EXCLUDED_DIRS",
@@ -214,11 +214,11 @@ SHEBANG_LANG_MAP = {
     "make": "make",
 }
 
-DEFAULT_EXCLUDED_DIRS: Set[str] = {".git"}
+DEFAULT_EXCLUDED_DIRS: set[str] = {".git"}
 
 # Extensions that are essentially always binary; trusted outright so we
 # don't even open these files.
-BINARY_EXTENSIONS: Set[str] = {
+BINARY_EXTENSIONS: set[str] = {
     ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp", ".tiff",
     ".pdf", ".zip", ".tar", ".gz", ".tgz", ".bz2", ".xz", ".7z", ".rar",
     ".exe", ".dll", ".so", ".dylib", ".o", ".a", ".class", ".jar",
@@ -231,7 +231,7 @@ BINARY_EXTENSIONS: Set[str] = {
 _BACKTICK_RUN_RE = re.compile(r"`+")
 
 
-def _shebang_language_from_line(first_line: str) -> Optional[str]:
+def _shebang_language_from_line(first_line: str) -> str | None:
     """Map a ``#!...`` line to a fence language, or None if inapplicable."""
     if not first_line.startswith("#!"):
         return None
@@ -244,7 +244,7 @@ def _shebang_language_from_line(first_line: str) -> Optional[str]:
     return SHEBANG_LANG_MAP.get(interpreter)
 
 
-def detect_language(path: Path, sample_text: Optional[str] = None) -> str:
+def detect_language(path: Path, sample_text: str | None = None) -> str:
     """Return a Markdown fence language identifier for ``path``.
 
     ``sample_text`` -- the file's already-decoded content, if available --
@@ -284,7 +284,7 @@ class LoadedFile:
 
     binary: bool
     text: str = ""
-    error: Optional[str] = None
+    error: str | None = None
 
 
 def load_file(path: Path, sniff_size: int = 8192) -> LoadedFile:
@@ -329,7 +329,7 @@ def load_file(path: Path, sniff_size: int = 8192) -> LoadedFile:
 
 def iter_project_files(
     root: Path,
-    excluded_dirs: Set[str],
+    excluded_dirs: set[str],
     follow_symlinks: bool = False,
 ) -> Iterator[Path]:
     """Yield every file (and, when not following symlinks, every symlinked
@@ -372,8 +372,8 @@ def iter_project_files(
 def build_markdown(
     root: Path,
     output_path: Path,
-    excluded_dirs: Set[str],
-    max_size: Optional[int],
+    excluded_dirs: set[str],
+    max_size: int | None,
     follow_symlinks: bool = False,
 ) -> int:
     """Write the Markdown dump to ``output_path``. Returns the number of
@@ -482,7 +482,7 @@ def _non_negative_int(value: str) -> int:
     return ivalue
 
 
-def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="dump-to-markdown",
         description=(
@@ -543,7 +543,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     _configure_logging(args.verbose)
 

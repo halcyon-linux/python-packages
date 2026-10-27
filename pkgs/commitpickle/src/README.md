@@ -1,79 +1,48 @@
 # commitpickle
 
-Generate a two-part Conventional Commit message (subject + body) for your **staged**
-changes using OpenCode's free models. Review it, then commit. Works in a plain terminal
-and as a lazygit custom command. Standard library only.
+Generate Conventional Commit suggestions for your staged changes with Claude Haiku,
+pick one, then commit. It works like `lazycommit` / `aicommit2`: several one-line
+candidates, a numbered picker, and a lazygit custom command. It uses your Claude
+subscription through the logged-in `claude` CLI (Claude Code), so no API key is needed.
+Standard library only.
 
 ## Setup
 
-```bash
-pip install --user .      # or install the RPM
-commitpickle init            # writes the tool-less agent + config, prints the lazygit snippet
-```
-
-Requires `git` and a logged-in `opencode` on `PATH`.
+1. Install Claude Code and log in with your subscription (`claude`, then `/login`).
+2. `commitpickle init` writes `~/.config/commitpickle/config.toml` and prints a lazygit snippet.
 
 ## Use
 
-```bash
+```
 git add -p
-commitpickle                          # generate -> [C]ommit / [e]dit / [r]egenerate / [q]uit
-commitpickle "fixes the race in #412" # give the model the "why"
-commitpickle --print                  # print only
-commitpickle --yes                    # commit without asking
-commitpickle -- --no-verify -S        # extra args go to `git commit`
+commitpickle                 # suggestions -> pick -> commit
+commitpickle "fixes #12"     # extra context for the "why"
+commitpickle -g 3            # three suggestions
+commitpickle --print         # print suggestions, one per line, do not commit
+commitpickle -o json         # {"messages": [...]} for scripts and lazygit
+commitpickle --yes           # commit with the first suggestion
+commitpickle -- --no-verify  # arguments after -- go to `git commit`
 ```
 
-## Configure
+At the prompt: a number picks that suggestion (Enter picks 1), `e2` picks 2 and opens your editor,
+`r` regenerates, `q` quits.
 
-```bash
-commitpickle models                                  # list current free models
-commitpickle config set models opencode/space-bunny-free,opencode/longcat-2.5-preview-free
-commitpickle config set timeout 60
-```
+## Config
 
-Config lives in `~/.config/commitpickle/config.toml`. `COMMITPICKLE_MODEL` overrides `models`.
-Models are tried in order; the first valid message wins. `config set` rewrites the file,
-so comments written by `init` are not preserved.
+`commitpickle config` shows settings; `commitpickle config set <key> <value>` changes them.
 
-Free models come and go. If the first one stops working, `commitpickle models` shows what is
-listed right now.
+| key | default | meaning |
+| --- | --- | --- |
+| `model` | `haiku` | any `claude --model` alias or full name (`COMMITPICKLE_MODEL` overrides) |
+| `effort` | `low` | `low`, `medium`, `high`, `xhigh`, `max` |
+| `count` | `6` | suggestions per run (1-10) |
+| `timeout` | `120` | seconds per attempt |
+| `max_diff` | `60000` | max bytes of staged diff sent |
 
-## Privacy
+## Privacy and safety
 
-The staged diff is sent to the model. The default models are free models that the Zen docs
-describe as zero-retention and not used for training. Other free models may train on your
-prompts or keep them for a while (see <https://opencode.ai/docs/zen/#privacy>), so check
-before switching.
-
-What commitpickle does to limit exposure:
-
-- Lock files, generated files and likely secrets (`.env`, `.env.local`, `.env.*.local`,
-  `*.pem`, `*.p12`, `*.pfx`, `id_rsa`, `id_ed25519`, at any depth) are left out of the diff
-  text. Their names still appear in the file list. This is a filename filter, not a secret
-  scanner: a token pasted into a source file is still sent.
-- The prompt is piped to OpenCode on stdin, so the diff never appears in `ps` output.
-- OpenCode runs from a private empty directory (`~/.cache/commitpickle/run`), not from your
-  repository, so a repository cannot change which agent, plugins or MCP servers are used.
-  With `attach` set, OpenCode is pointed at the repository instead, because the server
-  needs the path.
-
-OpenCode keeps a local session record of every run (titled `commitpickle`), including the
-prompt. Delete them with `opencode session delete` if that matters to you.
-
-## Safety
-
-The diff is untrusted input: a commit can contain text written to hijack the model. The
-`commitpickle` OpenCode agent therefore denies every tool (`"*": deny`), including any MCP
-tools you have configured. commitpickle refuses to run if it cannot install that agent, and
-aborts if OpenCode falls back to its default agent or reports that a tool actually ran.
-
-An agent file written by an older commitpickle is upgraded automatically. If you edited the
-file yourself it is left alone, with a warning if it does not deny tools by default;
-`commitpickle init --force` resets it.
-
-## Develop
-
-```bash
-pip install -e '.[test]' && pytest
-```
+The staged diff, branch name and last 10 commit subjects are sent to Anthropic through your
+Claude subscription. Lock files and likely-secret files (`.env`, `*.pem`, ...) are left out of the
+diff text. The prompt goes in on stdin. `claude` runs with every tool disabled, no MCP servers, no
+slash commands and no saved session, from `~/.cache/commitpickle/run` so the repository's own
+CLAUDE.md, settings and hooks are not loaded.

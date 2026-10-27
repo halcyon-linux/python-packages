@@ -250,7 +250,7 @@ def test_parse_args_version(capsys: pytest.CaptureFixture[str]):
     with pytest.raises(SystemExit) as excinfo:
         parse_args(["--version"])
     assert excinfo.value.code == 0
-    assert "dump-to-markdown 1.2.0" in capsys.readouterr().out
+    assert "dump-to-markdown 1.2.1" in capsys.readouterr().out
 
 
 # --------------------------------------------------------------------------

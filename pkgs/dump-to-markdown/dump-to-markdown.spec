@@ -5,7 +5,7 @@
 %define debug_package %{nil}
 
 Name:           dump-to-markdown
-Version:        1.2.0
+Version:        1.2.1
 Release:        1%{?dist}
 Summary:        Dump every file in a project tree into one Markdown document.
 License:        Apache-2.0
@@ -37,5 +37,8 @@ install -Dpm644 LICENSE %{buildroot}%{_licensedir}/%{name}/LICENSE
 %{_bindir}/dump-to-markdown
 
 %changelog
+* Tue Oct 27 2026 halcyon-autoupdate <aahsnr041@proton.me> - 1.2.1-1
+- modern typing syntax, drop unused import, require Python 3.10+
+
 * Wed Sep 30 2026 halcyon-autoupdate <aahsnr041@proton.me> - 1.2.0-1
 - initial packaging (vendored halcyon-original sources)
