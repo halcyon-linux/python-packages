@@ -20,7 +20,7 @@ no upstream tarball: each package's sources are vendored under
 | `boot-remount`     | `boot-remount`     | Remount `/boot` read-write around grub recipes, then restore. |
 | `brh`              | `brh`              | Interactive rpm-ostree rollback and rebase helper.   |
 | `bruh`             | `bruh`             | Short alias wrapper; `bruh moment` forwards to rollback. |
-| `commitpickle`     | `commitpickle`     | Generate Conventional Commit messages with OpenCode; review, then commit. |
+| `commitpickle`     | `commitpickle`     | Claude Haiku Conventional Commit suggestions (lazycommit/aicommit2 style); pick, then commit. |
 | `crh`              | `crh`              | Custom resolution and EDID helper.                   |
 | `dlss-swapper`     | `dlss-swapper`, `dlss-swapper-dll` | Steam launch wrappers forcing the latest DLSS presets. |
 | `dump-to-markdown` | `dump-to-markdown` | Dump a project tree into one Markdown document.      |
@@ -52,9 +52,9 @@ image-owned shell helpers and additionally require `flatpak`,
 `snapper`, `zenity`, `btrfs-assistant`, `polkit`, `libnotify`, `xdg-utils`,
 `xdg-user-dirs`, and `util-linux-core`.
 
-`commitpickle` additionally requires `opencode`. Fedora does not package it;
-Terra provides a v1 build, and halcyon images get v2 from the sibling
-`cli-tools` Copr (priority 1).
+`commitpickle` additionally requires `claude-code` (the `claude` CLI, logged in
+with a Claude subscription). Fedora does not package it; it must come from
+another repo on the image.
 
 ## CI
 
@@ -69,6 +69,37 @@ Terra provides a v1 build, and halcyon images get v2 from the sibling
 There is no version sweeper: halcyon-authored tools have no upstream feed.
 Bumps are manual — edit the spec's `Version` + `%changelog` and push.
 
+## Running and cancelling workflows
+
+### Run a workflow manually
+
+In the GitHub UI: **Actions** → the workflow → **Run workflow** → branch `main` →
+fill the inputs → **Run workflow**. From the CLI:
+
+```bash
+gh workflow run <file> -R halcyon-linux/python-packages --ref main -f <input>=<value>
+```
+
+Inputs (leave empty for the default):
+
+- `copr-build.yml` — `only`: space-separated packages to build (empty = all), e.g. `-f only="<pkg> <pkg>"`. Bypasses the `CASCADE_ENABLED` gate.
+- `repoclosure.yml`, `builder-docker.yml` — no inputs.
+
+### Force-cancel a workflow run
+
+1. Find the run ID: `gh run list -R halcyon-linux/python-packages --workflow <file>`.
+2. Cancel it: `gh run cancel <run-id> -R halcyon-linux/python-packages`, or **Cancel workflow**
+   on the run page.
+3. If it stays in *Cancelling* because a job or runner is hung, use **Force cancel**
+   on the run page, or:
+
+   ```bash
+   gh api -X POST repos/halcyon-linux/python-packages/actions/runs/<run-id>/force-cancel
+   ```
+
+A force cancel ends the run without waiting for its jobs. It does not stop Copr
+builds that were already submitted; cancel those on the Copr project page.
+
 ## Layout
 
 ```
@@ -80,4 +111,4 @@ repo/               this project's consumer .repo drop-in
 templates/          starting point for new specs (vendored-source pattern)
 ```
 
-See [AGENTS.md](AGENTS.md) for the conventions before touching specs.
+See [CLAUDE.md](CLAUDE.md) for the conventions before touching specs.

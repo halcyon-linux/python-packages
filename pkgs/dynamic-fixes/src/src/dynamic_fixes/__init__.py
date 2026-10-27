@@ -9,7 +9,6 @@ again when no Intel GPU is active.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 MODULES_FILE = Path("/proc/modules")

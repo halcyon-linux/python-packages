@@ -113,6 +113,11 @@ jobs:
           for package in bbrew-helper brh bruh crh gameclass boot-remount dlss-swapper dynamic-fixes fetch-image hardware-setup nvidia-flatpak-runtime powersave snapper-config user-setup ublue-motd uupd-update; do
             python3 -m unittest discover -s "pkgs/$package/src/tests" -v
           done
+          # pytest-based suites (unittest cannot collect them)
+          python3 -m pip install --quiet pytest
+          for package in commitpickle dump-to-markdown rmi; do
+            (cd "pkgs/$package/src" && python3 -m pytest -q -p no:cacheprovider)
+          done
       - name: Registry consistency + build plan
         run: |
           set -eu

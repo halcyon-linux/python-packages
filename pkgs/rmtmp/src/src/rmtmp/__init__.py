@@ -77,13 +77,18 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 def default_log_file() -> Path:
-    """Pick the log file: /var/log when writable, /tmp otherwise."""
+    """Pick the log file: /var/log when writable, else the user's XDG state dir.
+
+    Never /tmp: this tool runs as root and cleans /tmp, and a planted symlink at a fixed
+    world-writable path would redirect a root-owned append.
+    """
     override = os.environ.get("LOG_FILE")
     if override:
         return Path(override)
     if os.access("/var/log", os.W_OK):
         return Path("/var/log/tmp-cleanup.log")
-    return Path("/tmp/tmp-cleanup.log")
+    state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
+    return Path(state) / "rmtmp" / "tmp-cleanup.log"
 
 
 def read_days_old() -> int:
@@ -482,7 +487,7 @@ Environment Variables:
   DAYS_OLD          Number of days threshold (default: {DEFAULT_DAYS_OLD}, meaning
                     {DEFAULT_DAYS_OLD + 1}+ days old files)
   LOG_FILE          Path to log file (default: /var/log/tmp-cleanup.log,
-                    or /tmp/tmp-cleanup.log when /var/log is not writable)
+                    or $XDG_STATE_HOME/rmtmp/tmp-cleanup.log when /var/log is not writable)
 
 Examples:
   sudo {SCRIPT_NAME}                 # Interactive mode with confirmation

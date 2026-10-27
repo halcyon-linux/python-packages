@@ -8,7 +8,7 @@ FROM registry.fedoraproject.org/fedora-minimal:44
 # The CI image: jobs pack SRPMs (tarball + rpmbuild -bs) and drive Copr
 # (copr-cli) in here (this repo has no version sweeper — halcyon-authored
 # tools have no upstream feed). mock is included for LOCAL builds against a
-# `copr-cli mock-config` buildroot (see AGENTS.md); CI itself never builds
+# `copr-cli mock-config` buildroot (see CLAUDE.md); CI itself never builds
 # in a chroot. The stock /etc/yum.repos.d/fedora*.repo keep providing
 # Fedora 44 + updates.
 

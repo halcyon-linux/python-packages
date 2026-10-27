@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "commitpickle"
 dynamic = ["version"]
-description = "Generate two-part Conventional Commit messages with OpenCode's free models"
+description = "Generate Conventional Commit suggestions with Claude Haiku via the claude CLI"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
-keywords = ["git", "commit", "conventional-commits", "opencode", "lazygit"]
+keywords = ["git", "commit", "conventional-commits", "claude", "lazygit"]
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",

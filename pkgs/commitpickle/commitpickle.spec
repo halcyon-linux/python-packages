@@ -2,13 +2,12 @@
 # pkgs/commitpickle/src (no upstream tarball exists). Submitted to Copr
 # aahsnr-work/python-packages. Bumps are manual: edit Version + changelog,
 # push, the cascade rebuilds.
-# Vendored 0.1.0 with opencode v2 CLI fixes; see the changelog.
 %define debug_package %{nil}
 
 Name:           commitpickle
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
-Summary:        Generate two-part Conventional Commit messages with OpenCode.
+Summary:        Generate Conventional Commit suggestions with Claude Haiku.
 License:        Apache-2.0
 URL:            https://github.com/halcyon-linux/python-packages
 Source0:        %{name}-%{version}.tar.gz
@@ -17,12 +16,14 @@ BuildRequires:  pyproject-rpm-macros
 BuildRequires:  python3-devel
 BuildRequires:  git-core
 Requires:       git-core
-Requires:       opencode
+Requires:       claude-code
 
 %description
-Generate a two-part Conventional Commit message (subject plus body) for staged
-changes using OpenCode's free models, review it, then commit. Works in a plain
-terminal and as a lazygit custom command. Standard library only.
+Generate several Conventional Commit subjects for staged changes with Claude
+Haiku at low effort, pick one, then commit. Like lazycommit and aicommit2, but
+it uses the Claude subscription through the logged-in claude CLI instead of an
+API key. Works in a plain terminal and as a lazygit custom command. Standard
+library only.
 
 %prep
 %autosetup -p1
@@ -46,6 +47,11 @@ install -Dpm644 LICENSE %{buildroot}%{_licensedir}/%{name}/LICENSE
 %{_bindir}/commitpickle
 
 %changelog
+* Tue Oct 27 2026 halcyon-autoupdate <aahsnr041@proton.me> - 0.2.0-1
+- rewrite: Claude Haiku (low effort) via the claude CLI and subscription, no API key
+- lazycommit/aicommit2 style: several suggestions, picker, --print, -o json
+- drop opencode, its agent file, and the models subcommand
+
 * Tue Oct 20 2026 halcyon-autoupdate <aahsnr041@proton.me> - 0.1.0-1
 - initial packaging (vendored halcyon-original sources)
 - opencode v2 CLI compatibility: model listing, attach via --server, error parsing
