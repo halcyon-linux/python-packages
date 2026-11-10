@@ -246,11 +246,12 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(require("main")([]), 0)
             self.assertEqual(out.getvalue(), "")
 
-    def test_banner_silent_for_root(self):
+    def test_banner_prints_for_root(self):
         with patch.object(ublue_motd.os, "geteuid", return_value=0), \
-             contextlib.redirect_stdout(io.StringIO()) as out:
+             patch.object(ublue_motd, "banner", return_value="text"), \
+             patch.object(ublue_motd, "show_banner") as show:
             self.assertEqual(require("main")([]), 0)
-        self.assertEqual(out.getvalue(), "")
+        show.assert_called_once_with("text")
 
     def test_show_banner_prints_markdown_without_glow(self):
         with patch.object(ublue_motd.shutil, "which", return_value=None), \

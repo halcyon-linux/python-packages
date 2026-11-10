@@ -233,8 +233,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "toggle":
         return toggle_flag()
-    if os.geteuid() == 0:
-        return 0
     try:
         if disable_flag_path().exists():
             return 0
