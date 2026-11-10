@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 RPM packaging repo for **halcyon Python helper tools**: 28 small, halcyon-original,
 mostly stdlib-only CLI scripts vendored under `pkgs/<pkg>/src/`. There is no upstream

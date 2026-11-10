@@ -111,4 +111,4 @@ repo/               this project's consumer .repo drop-in
 templates/          starting point for new specs (vendored-source pattern)
 ```
 
-See [CLAUDE.md](CLAUDE.md) for the conventions before touching specs.
+See [AGENTS.md](AGENTS.md) for the conventions before touching specs.
